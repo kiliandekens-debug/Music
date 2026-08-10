@@ -83,11 +83,11 @@ instant, envoi à un label et suivi du délai, case « Répondu », campagne et
 planning à rebours, Mode Session avec bilan, persistance après actualisation,
 rendu mobile, et absence de fuite de données entre deux comptes.
 
-Un second parcours couvre l'artwork, la proposition automatique de campagne
-et la réorganisation du planning promotionnel :
+Deux parcours complémentaires couvrent le reste des critères :
 
 ```bash
-node tools/verification/e2e-artwork-campagne.mjs
+node tools/verification/e2e-artwork-campagne.mjs    # artwork, proposition de campagne, réorganisation du planning
+node tools/verification/e2e-contenu-resultats.mjs   # contenu planifié, relevé de résultats, changement d'étape, fiche label
 ```
 
 Les captures d'écran sont écrites dans `/tmp/shots`.
