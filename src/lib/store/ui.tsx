@@ -25,7 +25,11 @@ interface UiContextValue {
   filterTracks: <T extends { workspace_id: string | null }>(items: T[]) => T[];
   /** Vrai si la track appartient à l'espace sélectionné. */
   inWorkspace: (track: Pick<Track, "workspace_id">) => boolean;
-  quickAdd: QuickAddKind | null;
+  /**
+   * « choix » affiche la grille de l'ajout rapide ; un type précis ouvre
+   * directement le formulaire correspondant.
+   */
+  quickAdd: QuickAddKind | "choix" | null;
   openQuickAdd: (kind?: QuickAddKind) => void;
   closeQuickAdd: () => void;
 }
@@ -35,7 +39,7 @@ const UiContext = createContext<UiContextValue | null>(null);
 export function UiProvider({ children }: { children: React.ReactNode }) {
   const { profile, workspaces } = useData();
   const [workspaceId, setWorkspaceId] = useLocalState<string>("atelier.workspace", "tous");
-  const [quickAdd, setQuickAdd] = useState<QuickAddKind | null>(null);
+  const [quickAdd, setQuickAdd] = useState<QuickAddKind | "choix" | null>(null);
 
   // Couleur d'accentuation globale, pilotée par le profil.
   useEffect(() => {
@@ -69,7 +73,8 @@ export function UiProvider({ children }: { children: React.ReactNode }) {
       filterTracks,
       inWorkspace,
       quickAdd,
-      openQuickAdd: (kind = "track") => setQuickAdd(kind),
+      // Sans type explicite, on présente la grille de choix.
+      openQuickAdd: (kind) => setQuickAdd(kind ?? "choix"),
       closeQuickAdd: () => setQuickAdd(null),
     }),
     [workspaceId, setWorkspaceId, filterTracks, inWorkspace, quickAdd],

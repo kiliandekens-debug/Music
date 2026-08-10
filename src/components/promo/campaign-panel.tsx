@@ -371,8 +371,19 @@ export function CampaignPanel({ track }: { track: Track }) {
                 </header>
 
                 <ul className="divide-y divide-line">
-                  {groupTasks.map((task) => (
-                    <PromoTaskRow key={task.id} task={task} />
+                  {groupTasks.map((task, index) => (
+                    <PromoTaskRow
+                      key={task.id}
+                      task={task}
+                      first={index === 0}
+                      last={index === groupTasks.length - 1}
+                      onMove={(direction) => {
+                        const target = groupTasks[index + direction];
+                        if (!target) return;
+                        void update("promotion_tasks", task.id, { position: target.position });
+                        void update("promotion_tasks", target.id, { position: task.position });
+                      }}
+                    />
                   ))}
                 </ul>
 
@@ -413,11 +424,33 @@ export function CampaignPanel({ track }: { track: Track }) {
   );
 }
 
-function PromoTaskRow({ task }: { task: PromotionTask }) {
+function PromoTaskRow({
+  task,
+  first,
+  last,
+  onMove,
+}: {
+  task: PromotionTask;
+  first: boolean;
+  last: boolean;
+  onMove: (direction: -1 | 1) => void;
+}) {
   const { update, remove } = useData();
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(task.title);
   const done = task.status === "terminee";
   const overdue =
     !done && task.due_date ? (daysUntil(task.due_date) ?? 0) < 0 : false;
+
+  async function rename() {
+    const next = title.trim();
+    setEditing(false);
+    if (!next || next === task.title) {
+      setTitle(task.title);
+      return;
+    }
+    await update("promotion_tasks", task.id, { title: next });
+  }
 
   return (
     <li className="group flex items-center gap-3 px-4 py-2">
@@ -430,26 +463,65 @@ function PromoTaskRow({ task }: { task: PromotionTask }) {
           })
         }
       />
-      <span
-        className={cn(
-          "min-w-0 flex-1 text-[13px]",
-          done ? "text-faint line-through" : "text-ink-soft",
-        )}
-      >
-        {task.title}
-      </span>
+
+      {editing ? (
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onBlur={() => void rename()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void rename();
+            if (e.key === "Escape") {
+              setTitle(task.title);
+              setEditing(false);
+            }
+          }}
+          className="min-w-0 flex-1 rounded-md border border-accent bg-surface-2 px-2 py-1 text-[13px] focus:outline-none"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          title="Modifier le titre"
+          className={cn(
+            "min-w-0 flex-1 truncate text-left text-[13px]",
+            done ? "text-faint line-through" : "text-ink-soft",
+          )}
+        >
+          {task.title}
+        </button>
+      )}
+
       {task.due_date && !task.is_asset ? (
         <span className={cn("shrink-0 text-[11px]", overdue ? "text-danger" : "text-faint")}>
           {formatDate(task.due_date, "d MMM")}
         </span>
       ) : null}
-      <IconButton
-        label="Supprimer"
-        className="opacity-0 group-hover:opacity-100 focus:opacity-100"
-        onClick={() => void remove("promotion_tasks", task.id)}
+
+      <Menu
+        trigger={(props) => (
+          <IconButton
+            label="Actions"
+            className="opacity-0 group-hover:opacity-100 focus:opacity-100"
+            {...props}
+          >
+            <IconMore size={15} />
+          </IconButton>
+        )}
       >
-        <IconMore size={15} />
-      </IconButton>
+        <MenuItem onClick={() => setEditing(true)}>Renommer</MenuItem>
+        <MenuItem disabled={first} onClick={() => onMove(-1)}>
+          Monter
+        </MenuItem>
+        <MenuItem disabled={last} onClick={() => onMove(1)}>
+          Descendre
+        </MenuItem>
+        <MenuSeparator />
+        <MenuItem destructive onClick={() => void remove("promotion_tasks", task.id)}>
+          Supprimer
+        </MenuItem>
+      </Menu>
     </li>
   );
 }

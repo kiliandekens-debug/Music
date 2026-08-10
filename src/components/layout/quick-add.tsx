@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUi, type QuickAddKind } from "@/lib/store/ui";
 import { Modal, cn } from "@/components/ui";
@@ -55,14 +54,13 @@ const TITLES: Record<QuickAddKind, string> = {
 export function QuickAdd() {
   const router = useRouter();
   const { quickAdd, closeQuickAdd, openQuickAdd } = useUi();
-  const [chooser, setChooser] = useState(true);
 
   const open = quickAdd !== null;
-  const kind = quickAdd ?? "track";
+  const chooser = quickAdd === "choix";
+  const kind: QuickAddKind = chooser || quickAdd === null ? "track" : quickAdd;
 
   function close() {
     closeQuickAdd();
-    setChooser(true);
   }
 
   return (
@@ -80,10 +78,7 @@ export function QuickAdd() {
               <button
                 key={option.kind}
                 type="button"
-                onClick={() => {
-                  openQuickAdd(option.kind);
-                  setChooser(false);
-                }}
+                onClick={() => openQuickAdd(option.kind)}
                 className={cn(
                   "touch-target flex flex-col items-start gap-1.5 rounded-xl border border-line bg-surface-2 p-3 text-left transition-colors duration-100",
                   "hover:border-line-strong hover:bg-surface-3",

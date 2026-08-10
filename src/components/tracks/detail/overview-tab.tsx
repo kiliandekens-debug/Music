@@ -8,6 +8,8 @@ import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import { Button, Card, CopyButton, KeyValue, StatTile } from "@/components/ui";
 import { IconEdit, IconWarning } from "@/components/ui/icons";
+import { CampaignPrompt } from "@/components/promo/campaign-prompt";
+import { ArtworkCard } from "./artwork-card";
 import type { Track } from "@/lib/types";
 
 export function OverviewTab({ track, onEdit }: { track: Track; onEdit: () => void }) {
@@ -29,6 +31,8 @@ export function OverviewTab({ track, onEdit }: { track: Track; onEdit: () => voi
   return (
     <div className="grid gap-4 lg:grid-cols-3">
       <div className="space-y-4 lg:col-span-2">
+        <CampaignPrompt track={track} />
+
         {track.is_blocked ? (
           <Card className="border-danger/30 bg-danger/5 p-4">
             <div className="flex items-start gap-2.5">
@@ -104,6 +108,7 @@ export function OverviewTab({ track, onEdit }: { track: Track; onEdit: () => voi
       </div>
 
       <div className="space-y-3">
+        <ArtworkCard track={track} />
         <div className="grid grid-cols-2 gap-3">
           <StatTile label="Labels contactés" value={stats.sent} />
           <StatTile

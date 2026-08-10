@@ -83,6 +83,13 @@ instant, envoi à un label et suivi du délai, case « Répondu », campagne et
 planning à rebours, Mode Session avec bilan, persistance après actualisation,
 rendu mobile, et absence de fuite de données entre deux comptes.
 
+Un second parcours couvre l'artwork, la proposition automatique de campagne
+et la réorganisation du planning promotionnel :
+
+```bash
+node tools/verification/e2e-artwork-campagne.mjs
+```
+
 Les captures d'écran sont écrites dans `/tmp/shots`.
 
 ### Logique métier
