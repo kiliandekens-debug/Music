@@ -1,0 +1,309 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  SUBMISSION_METHOD_LABEL,
+  SUBMISSION_STATUS_LABEL,
+  SUBMISSION_STATUS_TONE,
+} from "@/lib/constants";
+import { formatDate, todayIso } from "@/lib/format";
+import { buildMailto, submissionTiming } from "@/lib/domain/submissions";
+import { useData } from "@/lib/store/data";
+import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  EmptyState,
+  IconButton,
+  Menu,
+  MenuItem,
+  MenuLabel,
+  MenuSeparator,
+  Modal,
+  cn,
+} from "@/components/ui";
+import { IconMail, IconMore } from "@/components/ui/icons";
+import { RespondedDialog } from "./responded-dialog";
+import { SubmissionForm } from "./submission-form";
+import type { LabelSubmission, SubmissionStatus } from "@/lib/types";
+
+/**
+ * Liste des envois. Utilisée sur la fiche d'une track (colonne label) et sur
+ * la fiche d'un label (colonne track).
+ */
+export function SubmissionList({
+  submissions,
+  show,
+  emptyMessage,
+}: {
+  submissions: LabelSubmission[];
+  show: "label" | "track";
+  emptyMessage?: string;
+}) {
+  const { labels, tracks, update, remove, insert } = useData();
+  const [responding, setResponding] = useState<LabelSubmission | null>(null);
+  const [editing, setEditing] = useState<LabelSubmission | null>(null);
+
+  if (submissions.length === 0) {
+    return (
+      <EmptyState
+        title="Aucun envoi"
+        description={emptyMessage ?? "Les envois enregistrés apparaîtront ici."}
+      />
+    );
+  }
+
+  async function registerFollowup(submission: LabelSubmission) {
+    await update("label_submissions", submission.id, {
+      last_followup_at: todayIso(),
+      followup_count: submission.followup_count + 1,
+      status: "en_attente",
+      followup_due_date: null,
+    });
+    const label = labels.find((l) => l.id === submission.label_id);
+    await insert("reminders", {
+      track_id: submission.track_id,
+      title: `Relance effectuée — ${label?.name ?? "label"}`,
+      kind: "relance_label",
+      entity_type: "label_submission",
+      entity_id: submission.id,
+      due_at: new Date().toISOString(),
+      done_at: new Date().toISOString(),
+    });
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        {submissions.map((submission) => {
+          const label = labels.find((l) => l.id === submission.label_id);
+          const track = tracks.find((t) => t.id === submission.track_id);
+          const timing = submissionTiming(submission);
+
+          return (
+            <Card key={submission.id} className="p-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {show === "label" ? (
+                      <span className="truncate text-[13px] font-medium text-ink">
+                        {label?.name ?? "Label supprimé"}
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/studio/${submission.track_id}`}
+                        className="truncate text-[13px] font-medium text-ink hover:text-accent-ink"
+                      >
+                        {track?.title ?? "Track supprimée"}
+                      </Link>
+                    )}
+                    <Badge tone={SUBMISSION_STATUS_TONE[submission.status]}>
+                      {SUBMISSION_STATUS_LABEL[submission.status]}
+                    </Badge>
+                    <Badge>{SUBMISSION_METHOD_LABEL[submission.method]}</Badge>
+                  </div>
+
+                  <p
+                    className={cn(
+                      "mt-1 text-[12px]",
+                      timing.tone === "danger"
+                        ? "text-danger"
+                        : timing.tone === "warn"
+                          ? "text-warn"
+                          : timing.tone === "ok"
+                            ? "text-ok"
+                            : "text-muted",
+                    )}
+                  >
+                    {timing.label}
+                    {submission.sent_at ? ` · envoyé le ${formatDate(submission.sent_at)}` : ""}
+                    {submission.followup_count > 0
+                      ? ` · ${submission.followup_count} relance${submission.followup_count > 1 ? "s" : ""}`
+                      : ""}
+                  </p>
+
+                  {submission.response_message ? (
+                    <p className="mt-2 rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-[12px] leading-snug text-ink-soft">
+                      {submission.response_message}
+                    </p>
+                  ) : null}
+
+                  {submission.next_action ? (
+                    <p className="mt-1.5 text-[12px] text-accent-ink">
+                      Prochaine action : {submission.next_action}
+                      {submission.next_action_date
+                        ? ` · ${formatDate(submission.next_action_date)}`
+                        : ""}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="flex shrink-0 items-center gap-2">
+                  <Checkbox
+                    checked={submission.responded}
+                    onChange={(checked) => {
+                      if (checked) setResponding(submission);
+                      else
+                        void update("label_submissions", submission.id, {
+                          responded_at: null,
+                          response_type: null,
+                          status: "en_attente",
+                        });
+                    }}
+                    label={<span className="text-[12px] text-muted">Répondu</span>}
+                  />
+
+                  <Menu
+                    trigger={(props) => (
+                      <IconButton label="Actions" {...props}>
+                        <IconMore size={16} />
+                      </IconButton>
+                    )}
+                  >
+                    <MenuItem onClick={() => setEditing(submission)}>Modifier l&apos;envoi</MenuItem>
+                    {!submission.responded ? (
+                      <MenuItem onClick={() => setResponding(submission)}>
+                        Enregistrer une réponse
+                      </MenuItem>
+                    ) : null}
+                    <MenuItem
+                      disabled={!submission.sent_at || submission.responded}
+                      onClick={() => void registerFollowup(submission)}
+                    >
+                      Marquer comme relancé aujourd&apos;hui
+                    </MenuItem>
+                    {label?.email ? (
+                      <MenuItem
+                        onClick={() => {
+                          window.location.href = buildMailto(label, track ?? null, {
+                            privateLink: submission.private_link,
+                          });
+                        }}
+                      >
+                        Ouvrir dans mon application e-mail
+                      </MenuItem>
+                    ) : null}
+                    <MenuSeparator />
+                    <MenuLabel>Statut</MenuLabel>
+                    {(
+                      [
+                        "envoye",
+                        "en_attente",
+                        "a_relancer",
+                        "interesse",
+                        "en_discussion",
+                        "signe",
+                        "refuse",
+                        "sans_reponse",
+                      ] as SubmissionStatus[]
+                    ).map((status) => (
+                      <MenuItem
+                        key={status}
+                        disabled={submission.status === status}
+                        onClick={() =>
+                          void update("label_submissions", submission.id, { status })
+                        }
+                      >
+                        {SUBMISSION_STATUS_LABEL[status]}
+                      </MenuItem>
+                    ))}
+                    <MenuSeparator />
+                    <MenuItem
+                      destructive
+                      onClick={() => void remove("label_submissions", submission.id)}
+                    >
+                      Supprimer
+                    </MenuItem>
+                  </Menu>
+                </div>
+              </div>
+
+              {label?.email && !submission.responded ? (
+                <div className="mt-2 border-t border-line pt-2">
+                  <a
+                    href={buildMailto(label, track ?? null, {
+                      privateLink: submission.private_link,
+                    })}
+                    className="inline-flex items-center gap-1.5 text-[12px] text-accent hover:underline"
+                  >
+                    <IconMail size={13} />
+                    Écrire à {label.email}
+                  </a>
+                </div>
+              ) : null}
+            </Card>
+          );
+        })}
+      </div>
+
+      <RespondedDialog
+        submission={responding}
+        open={responding !== null}
+        onClose={() => setResponding(null)}
+      />
+
+      <Modal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title="Modifier l'envoi"
+        size="lg"
+      >
+        {editing ? (
+          <SubmissionForm
+            submission={editing}
+            onDone={() => setEditing(null)}
+            onCancel={() => setEditing(null)}
+          />
+        ) : null}
+      </Modal>
+    </>
+  );
+}
+
+/** Compteurs d'envois, affichés au-dessus d'une liste. */
+export function SubmissionCounters({
+  stats,
+}: {
+  stats: {
+    sent: number;
+    pending: number;
+    positive: number;
+    negative: number;
+    noAnswer: number;
+    responseRate: number;
+  };
+}) {
+  const items = [
+    { label: "labels contactés", value: stats.sent },
+    { label: "en attente", value: stats.pending },
+    { label: "réponses positives", value: stats.positive, tone: "ok" as const },
+    { label: "refus", value: stats.negative },
+    { label: "sans réponse", value: stats.noAnswer },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-line bg-surface px-4 py-3">
+      {items.map((item) => (
+        <span key={item.label} className="text-[13px] text-muted">
+          <span
+            className={cn(
+              "tabular mr-1 font-semibold",
+              item.tone === "ok" ? "text-ok" : "text-ink",
+            )}
+          >
+            {item.value}
+          </span>
+          {item.label}
+        </span>
+      ))}
+      <span className="ml-auto text-[13px] text-muted">
+        Taux de réponse{" "}
+        <span className="tabular font-semibold text-ink">
+          {stats.sent === 0 ? "—" : `${Math.round(stats.responseRate)} %`}
+        </span>
+      </span>
+    </div>
+  );
+}
