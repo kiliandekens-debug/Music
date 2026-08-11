@@ -245,6 +245,28 @@ langue plus tard ne demandera donc aucune migration de données.
 
 ---
 
+## Sécurité des dépendances
+
+`npm audit` doit rester à zéro. Deux `overrides` dans `package.json` y
+contribuent :
+
+| Paquet    | Raison                                                                        |
+| --------- | ----------------------------------------------------------------------------- |
+| `sharp`   | Next le contraint à `^0.34.3` ; les versions < 0.35 héritent de failles libvips |
+| `postcss` | Next épingle 8.4.31 ; la chaîne Tailwind utilise déjà 8.5.26, corrigée          |
+
+Ces deux paquets ne servent qu'à la construction (l'application n'utilise pas
+`next/image`, donc l'optimiseur d'images n'est jamais appelé). Les `overrides`
+pourront disparaître dès qu'une version de Next relèvera ses propres
+contraintes.
+
+Avant d'accepter une mise à jour de dépendances proposée automatiquement,
+vérifiez ce qu'elle change : `npm audit` indique la version corrigée exacte,
+et `npm install <paquet>@<version>` suffit en général — sans changement de
+version majeure, qui lui demanderait une relecture complète.
+
+---
+
 ## Développement
 
 ```bash

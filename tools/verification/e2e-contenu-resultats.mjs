@@ -11,6 +11,12 @@ const BASE = "http://localhost:3111";
 const errors = [];
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+
+// En mode développement, Next compile chaque route au premier accès : la fiche
+// track demande plusieurs secondes. On laisse donc de la marge, sans quoi le
+// parcours échouerait sur une lenteur de compilation et non sur un défaut.
+page.setDefaultTimeout(30_000);
+page.setDefaultNavigationTimeout(30_000);
 page.on("pageerror", (e) => errors.push(`PAGE ERROR: ${e.message}`));
 page.on("console", (m) => {
   if (m.type() === "error") errors.push(`CONSOLE: ${m.text().slice(0, 200)}`);

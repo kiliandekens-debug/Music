@@ -8,6 +8,12 @@ import { chromium } from "playwright";
 const errors = [];
 const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium" });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+
+// En mode développement, Next compile chaque route au premier accès : la fiche
+// track demande plusieurs secondes. On laisse donc de la marge, sans quoi le
+// parcours échouerait sur une lenteur de compilation et non sur un défaut.
+page.setDefaultTimeout(30_000);
+page.setDefaultNavigationTimeout(30_000);
 page.on("pageerror", (e) => errors.push("PAGE ERROR: " + e.message));
 page.on("console", (m) => { if (m.type() === "error") errors.push("CONSOLE: " + m.text().slice(0,200)); });
 
@@ -27,7 +33,7 @@ await page.getByRole("button", { name: "Nouvelle track" }).click();
 await page.waitForTimeout(600);
 await page.getByLabel("Titre").fill("Aurore");
 await page.getByRole("button", { name: "Créer la track" }).click();
-await page.waitForURL(/\/studio\/[0-9a-f-]+/, { timeout: 15000 });
+await page.waitForURL(/\/studio\/[0-9a-f-]+/, { timeout: 30_000 });
 await page.waitForTimeout(2000);
 const trackUrl = page.url().split("?")[0];
 console.log("✓ Track créée depuis l'ajout rapide");

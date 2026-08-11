@@ -13,6 +13,12 @@ const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromi
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
 
+// En mode développement, Next compile chaque route au premier accès : la fiche
+// track demande plusieurs secondes. On laisse donc de la marge, sans quoi le
+// parcours échouerait sur une lenteur de compilation et non sur un défaut.
+page.setDefaultTimeout(30_000);
+page.setDefaultNavigationTimeout(30_000);
+
 process.on("uncaughtException", async (error) => {
   console.error("\n✗ ÉCHEC :", error.message.split("\n")[0]);
   console.error("\n--- erreurs de page capturées ---");
@@ -37,14 +43,14 @@ const shot = (name) => page.screenshot({ path: `/tmp/shots/${name}.png` });
 await page.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
 await page.getByLabel("Adresse e-mail").fill("producteur@exemple.com");
 await page.getByRole("button", { name: /Recevoir le lien/ }).click();
-await page.getByLabel(/Code reçu/).waitFor({ timeout: 10000 });
+await page.getByLabel(/Code reçu/).waitFor({ timeout: 30_000 });
 await page.getByLabel(/Code reçu/).fill("123456");
 await page.getByRole("button", { name: "Se connecter" }).click();
-await page.waitForURL(/aujourdhui/, { timeout: 15000 });
+await page.waitForURL(/aujourdhui/, { timeout: 30_000 });
 log("✓ Connexion par e-mail réussie");
 
 // --- Onboarding --------------------------------------------------------------
-await page.getByText("Bienvenue dans Atelier").waitFor({ timeout: 10000 });
+await page.getByText("Bienvenue dans Atelier").waitFor({ timeout: 30_000 });
 await shot("01-onboarding");
 log("✓ Onboarding affiché à la première connexion");
 
@@ -75,7 +81,7 @@ log("✓ Le pipeline affiche la track persistée");
 
 // --- Fiche track : tâches et progression -------------------------------------
 await page.getByText("Nocturne").first().click();
-await page.waitForURL(/\/studio\/[0-9a-f-]+/, { timeout: 10000 });
+await page.waitForURL(/\/studio\/[0-9a-f-]+/, { timeout: 30_000 });
 await page.waitForTimeout(1200);
 log("✓ Fiche de la track ouverte");
 
@@ -206,7 +212,7 @@ await page.waitForTimeout(900);
 // Sélectionne la première tâche encore ouverte proposée par le Mode Session.
 await page.locator('button:has(input[type="checkbox"])').first().click();
 await page.getByRole("button", { name: "Démarrer la session" }).click();
-await page.waitForURL(/sessions\/mode/, { timeout: 10000 });
+await page.waitForURL(/sessions\/mode/, { timeout: 30_000 });
 await page.waitForTimeout(2500);
 await shot("08-mode-session");
 log("✓ Mode Session démarré, chronomètre en marche");
@@ -265,10 +271,10 @@ const otherPage = await other.newPage();
 await otherPage.goto(`${BASE}/connexion`, { waitUntil: "networkidle" });
 await otherPage.getByLabel("Adresse e-mail").fill("autre@exemple.com");
 await otherPage.getByRole("button", { name: /Recevoir le lien/ }).click();
-await otherPage.getByLabel(/Code reçu/).waitFor({ timeout: 10000 });
+await otherPage.getByLabel(/Code reçu/).waitFor({ timeout: 30_000 });
 await otherPage.getByLabel(/Code reçu/).fill("123456");
 await otherPage.getByRole("button", { name: "Se connecter" }).click();
-await otherPage.waitForURL(/aujourdhui/, { timeout: 15000 });
+await otherPage.waitForURL(/aujourdhui/, { timeout: 30_000 });
 await otherPage.waitForTimeout(2500);
 const leaked = await otherPage.getByText("Nocturne").count();
 if (leaked > 0) throw new Error("FUITE DE DONNÉES : un autre compte voit la track");
