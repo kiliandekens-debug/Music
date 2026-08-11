@@ -41,18 +41,41 @@ Quelques partis pris :
 
 ### 1. Créer le projet Supabase
 
-Sur [supabase.com](https://supabase.com), créez un projet, puis dans
-**SQL Editor** exécutez le contenu de :
+Sur [supabase.com](https://supabase.com), créez un projet. C'est la seule étape
+qui demande votre compte ; le reste est automatisé.
 
+### 2. Lancer l'installation guidée
+
+```bash
+npm install
+npm run setup
 ```
-supabase/migrations/0001_init.sql
+
+Le script vous demande trois valeurs, puis fait le reste :
+
+| Valeur                | Où la trouver                                          |
+| --------------------- | ------------------------------------------------------ |
+| URL du projet         | Project Settings → API                                 |
+| Clé **anon**          | Project Settings → API                                 |
+| Chaîne de connexion   | Project Settings → Database → Connection string → URI  |
+
+Il écrit `.env.local`, applique la migration, puis vérifie que les 22 tables,
+la Row Level Security, les politiques d'accès, le bucket de stockage et le
+déclencheur de création de profil sont bien en place.
+
+Deux garde-fous : la saisie des secrets n'apparaît pas à l'écran, et le script
+**refuse la clé `service_role`** si vous la collez par erreur à la place de la
+clé `anon` — elle contournerait la Row Level Security.
+
+Si vous préférez ne pas confier la chaîne de connexion au script, laissez la
+question vide et exécutez `supabase/migrations/0001_init.sql` dans le SQL Editor
+de Supabase. Vous pourrez contrôler le résultat avec :
+
+```bash
+npm run setup -- --verifier
 ```
 
-Cette migration crée les 22 tables, les index, les déclencheurs `updated_at`,
-la Row Level Security sur chaque table, le bucket de stockage privé `media`,
-et la création automatique du profil à l'inscription.
-
-### 2. Configurer l'authentification
+### 3. Configurer l'authentification
 
 Dans **Authentication → Providers**, gardez uniquement `Email` activé.
 
@@ -68,25 +91,15 @@ iPhone), ajoutez `{{ .Token }}` au modèle d'e-mail « Magic Link » dans
 Dans **Authentication → URL Configuration**, ajoutez vos URL de redirection :
 `http://localhost:3000/auth/callback` et celle de votre déploiement.
 
-### 3. Configurer l'application
+### 4. Lancer
 
 ```bash
-cp .env.example .env.local
+npm run dev
 ```
-
-Renseignez `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-(**Project Settings → API**), ainsi que `NEXT_PUBLIC_SITE_URL`.
 
 > La clé `service_role` ne doit jamais être placée dans une variable
 > `NEXT_PUBLIC_*` : elle contourne la Row Level Security. L'application n'en a
 > pas besoin.
-
-### 4. Lancer
-
-```bash
-npm install
-npm run dev
-```
 
 À la première connexion, un onboarding court propose vos espaces
 (Deepest Mind, ELVIK, Remixes, Idées à trier), les étapes du pipeline, le délai
@@ -204,6 +217,7 @@ npm run build      # build de production
 npm run typecheck  # TypeScript strict, sans émission
 npm test           # tests unitaires des règles métier
 npm run icons      # régénère les icônes PWA
+npm run setup      # installation guidée (voir plus haut)
 ```
 
 ### Vérification

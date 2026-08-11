@@ -88,6 +88,7 @@ Deux parcours complémentaires couvrent le reste des critères :
 ```bash
 node tools/verification/e2e-artwork-campagne.mjs    # artwork, proposition de campagne, réorganisation du planning
 node tools/verification/e2e-contenu-resultats.mjs   # contenu planifié, relevé de résultats, changement d'étape, fiche label
+node tools/verification/e2e-kanban.mjs              # glisser-déposer du pipeline et trace dans l'historique
 ```
 
 Les captures d'écran sont écrites dans `/tmp/shots`.

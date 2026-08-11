@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/lib/domain/__tests__/*.test.ts",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "setup": "node scripts/setup.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.1.0",
@@ -27,8 +28,10 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^22.10.5",
+    "@types/pg": "^8.21.0",
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
+    "pg": "^8.23.0",
     "playwright": "^1.62.1",
     "tailwindcss": "^4.0.0",
     "tsx": "^4.23.12",

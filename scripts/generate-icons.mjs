@@ -150,3 +150,11 @@ for (const target of targets) {
 // Favicon 32×32 réutilisé tel quel par le navigateur.
 writeFileSync(resolve(here, "..", "public", "favicon.png"), drawIcon(32));
 console.log("✓ favicon.png (32×32)");
+
+// Conventions Next.js : app/icon.png et app/apple-icon.png sont servis
+// automatiquement comme favicon, ce qui évite une requête /favicon.ico en 404.
+const appDir = resolve(here, "..", "src", "app");
+writeFileSync(resolve(appDir, "icon.png"), drawIcon(32));
+console.log("✓ src/app/icon.png (32×32)");
+writeFileSync(resolve(appDir, "apple-icon.png"), drawIcon(180, { maskable: true }));
+console.log("✓ src/app/apple-icon.png (180×180)");
