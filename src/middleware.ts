@@ -28,11 +28,35 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const path = request.nextUrl.pathname;
+
+  /*
+   * Rattrapage des liens de connexion mal aiguillés.
+   *
+   * Supabase n'honore l'URL de retour demandée que si elle figure dans sa
+   * liste d'autorisations ; sinon il retombe sur la « Site URL » du projet,
+   * souvent la racine. Le code d'authentification arriverait alors sur une
+   * page qui n'en fait rien, et la connexion échouerait sans explication.
+   * On le réachemine vers le point d'entrée prévu.
+   */
+  const hasAuthCode =
+    request.nextUrl.searchParams.has("code") ||
+    (request.nextUrl.searchParams.has("token_hash") &&
+      request.nextUrl.searchParams.has("type"));
+
+  if (hasAuthCode && !path.startsWith("/auth/")) {
+    const redirect = request.nextUrl.clone();
+    redirect.pathname = "/auth/callback";
+    if (!redirect.searchParams.has("suivant")) {
+      redirect.searchParams.set("suivant", path === "/" ? "/aujourdhui" : path);
+    }
+    return NextResponse.redirect(redirect);
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
   if (!user && !isPublic) {

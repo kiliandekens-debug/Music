@@ -23,6 +23,27 @@ export function SignInForm() {
 
   const configured = supabaseConfigured();
 
+  /*
+   * Un lien de connexion peut échouer côté serveur : le message revient alors
+   * dans l'URL. Sans traduction, l'utilisateur retombe sur le formulaire sans
+   * la moindre explication. Les deux causes courantes méritent une consigne
+   * concrète plutôt que le texte brut de Supabase.
+   */
+  const linkError = params.get("erreur");
+  const linkErrorMessage = (() => {
+    if (!linkError) return null;
+    if (/code verifier|different browser|different device/i.test(linkError)) {
+      return (
+        "Ce lien a été demandé depuis un autre appareil ou un autre navigateur. " +
+        "Demandez-en un nouveau ici même, ou saisissez le code à 6 chiffres reçu par e-mail."
+      );
+    }
+    if (/expired|invalid|lien_invalide/i.test(linkError)) {
+      return "Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.";
+    }
+    return `La connexion a échoué : ${linkError}`;
+  })();
+
   async function sendLink(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -91,6 +112,11 @@ export function SignInForm() {
         </div>
       ) : step === "email" ? (
         <form onSubmit={sendLink} className="card space-y-4 p-5">
+          {linkErrorMessage ? (
+            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2.5 text-[13px] leading-relaxed text-warn">
+              {linkErrorMessage}
+            </p>
+          ) : null}
           <Field label="Adresse e-mail" htmlFor="email">
             <Input
               id="email"
