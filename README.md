@@ -53,7 +53,7 @@ Le script propose déjà l'URL du projet ; il vous reste deux valeurs à coller 
 
 | Valeur              | Où la trouver                                                     |
 | ------------------- | ----------------------------------------------------------------- |
-| Clé **anon**        | [Settings → API](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/settings/api)                                 |
+| Clé **publishable** | [Settings → API Keys](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/settings/api-keys) — `sb_publishable_…` |
 | Chaîne de connexion | [Settings → Database → Connection string → URI](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/settings/database) |
 
 Il écrit `.env.local`, applique la migration, puis vérifie que les 22 tables,
@@ -61,8 +61,10 @@ la Row Level Security, les politiques d'accès, le bucket de stockage et le
 déclencheur de création de profil sont bien en place.
 
 Deux garde-fous : la saisie des secrets n'apparaît pas à l'écran, et le script
-**refuse la clé `service_role`** si vous la collez par erreur à la place de la
-clé `anon` — elle contournerait la Row Level Security.
+**refuse toute clé privilégiée** collée par erreur — `sb_secret_…` comme
+`service_role`. Ces clés contournent la Row Level Security ; l'application
+n'en a aucun besoin. Si l'une d'elles a été exposée, révoquez-la depuis
+[Settings → API Keys](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/settings/api-keys).
 
 Si vous préférez ne pas confier la chaîne de connexion au script, laissez la
 question vide, puis collez le contenu de `supabase/migrations/0001_init.sql`
@@ -96,9 +98,9 @@ déploiement.
 npm run dev
 ```
 
-> La clé `service_role` ne doit jamais être placée dans une variable
-> `NEXT_PUBLIC_*` : elle contourne la Row Level Security. L'application n'en a
-> pas besoin.
+> Seule la clé **publique** (`sb_publishable_…` ou `anon`) doit figurer dans une
+> variable `NEXT_PUBLIC_*`. Une clé secrète y contournerait la Row Level
+> Security ; l'application n'en a aucun besoin.
 
 À la première connexion, un onboarding court propose vos espaces
 (Deepest Mind, ELVIK, Remixes, Idées à trier), les étapes du pipeline, le délai

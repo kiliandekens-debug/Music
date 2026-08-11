@@ -243,23 +243,45 @@ async function main() {
       process.exit(1);
     }
 
+    // Une clé privilégiée ne doit jamais atteindre le navigateur : elle
+    // contourne la Row Level Security. On refuse les deux formats de Supabase.
+    const refuse = (raison) => {
+      console.log(
+        c.red(`\n  ✗ ${raison}\n`) +
+          "    Cette clé contourne la Row Level Security : elle donne accès à toutes\n" +
+          "    les données, quel que soit le compte. Elle ne doit jamais figurer dans\n" +
+          "    une variable NEXT_PUBLIC_*, et l'application n'en a pas besoin.\n\n" +
+          `    Reprenez la clé ${c.bold("publishable")} (ou ${c.bold("anon")}), puis ${c.bold("révoquez")} celle-ci\n` +
+          "    si vous l'avez exposée.\n",
+      );
+      process.exit(1);
+    };
+
+    // Format récent : sb_publishable_… / sb_secret_…
+    if (/^sb_secret_/i.test(anonKey)) {
+      refuse("Ceci est une clé secrète (« secret key »).");
+    }
+
+    // Format historique : JWT portant son rôle.
     if (/^eyJ/.test(anonKey)) {
-      // Une clé JWT porte son rôle : on refuse la service_role, qui ne doit
-      // jamais atteindre le navigateur.
       try {
         const payload = JSON.parse(Buffer.from(anonKey.split(".")[1], "base64").toString());
         if (payload.role && payload.role !== "anon") {
-          console.log(
-            c.red(
-              `\n  ✗ Cette clé a le rôle « ${payload.role} ». N'utilisez jamais la clé service_role\n` +
-                "    dans l'application : elle contourne la Row Level Security. Reprenez la clé « anon ».\n",
-            ),
-          );
-          process.exit(1);
+          refuse(`Cette clé a le rôle « ${payload.role} ».`);
         }
       } catch {
         // Clé non décodable : on laisse passer, Supabase la validera.
       }
+    }
+
+    const looksPublic = /^(sb_publishable_|eyJ)/.test(anonKey);
+    if (!looksPublic) {
+      console.log(
+        c.yellow(
+          "\n  ⚠ Cette clé ne ressemble ni à une clé publishable ni à une clé anon.\n" +
+            "    Vérifiez que vous avez copié la bonne ligne dans Settings → API Keys.\n",
+        ),
+      );
     }
 
     const contents =
