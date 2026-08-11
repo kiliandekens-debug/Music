@@ -7,7 +7,7 @@ import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
 import { Button, Field, Input } from "@/components/ui";
 import { IconMusic } from "@/components/ui/icons";
 
-type Step = "email" | "code";
+type Step = "email" | "code" | "motdepasse";
 
 export function SignInForm() {
   const router = useRouter();
@@ -17,6 +17,7 @@ export function SignInForm() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -89,6 +90,39 @@ export function SignInForm() {
     }
   }
 
+  /*
+   * Connexion par mot de passe.
+   *
+   * Elle ne dépend d'aucun e-mail ni d'aucune URL de redirection : c'est la
+   * voie la plus sûre depuis un téléphone, où les liens de connexion se
+   * heurtent facilement à la configuration du projet.
+   */
+  async function signInWithPassword(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const { error: passwordError } = await getSupabase().auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (passwordError) throw passwordError;
+      router.replace(nextPath);
+      router.refresh();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Connexion impossible";
+      setError(
+        /invalid login credentials/i.test(message)
+          ? "Adresse e-mail ou mot de passe incorrect. Si vous n'avez pas encore défini de mot de passe, connectez-vous par e-mail puis faites-le dans Paramètres → Compte."
+          : /email not confirmed/i.test(message)
+            ? "Cette adresse n'est pas encore confirmée. Connectez-vous une première fois par e-mail."
+            : message,
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="w-full max-w-sm">
       <div className="mb-8 flex flex-col items-center gap-3 text-center">
@@ -134,8 +168,69 @@ export function SignInForm() {
             Recevoir le lien de connexion
           </Button>
           <p className="text-center text-[12px] leading-relaxed text-faint">
-            Un lien de connexion vous est envoyé par e-mail. Aucun mot de passe à retenir.
+            Un lien de connexion vous est envoyé par e-mail. Ouvrez-le sur cet appareil.
           </p>
+          <button
+            type="button"
+            className="w-full border-t border-line pt-3 text-center text-[13px] text-muted hover:text-ink"
+            onClick={() => {
+              setStep("motdepasse");
+              setError(null);
+            }}
+          >
+            Se connecter avec un mot de passe
+          </button>
+        </form>
+      ) : step === "motdepasse" ? (
+        <form onSubmit={signInWithPassword} className="card space-y-4 p-5">
+          {linkErrorMessage ? (
+            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2.5 text-[13px] leading-relaxed text-warn">
+              {linkErrorMessage}
+            </p>
+          ) : null}
+          <Field label="Adresse e-mail" htmlFor="email-mdp">
+            <Input
+              id="email-mdp"
+              type="email"
+              required
+              autoComplete="email"
+              autoFocus
+              placeholder="vous@exemple.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
+          <Field label="Mot de passe" htmlFor="motdepasse">
+            <Input
+              id="motdepasse"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+          {error ? <p className="text-[13px] leading-relaxed text-danger">{error}</p> : null}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            className="w-full"
+            loading={busy}
+            disabled={!email.trim() || password.length === 0}
+          >
+            Se connecter
+          </Button>
+          <button
+            type="button"
+            className="w-full border-t border-line pt-3 text-center text-[13px] text-muted hover:text-ink"
+            onClick={() => {
+              setStep("email");
+              setError(null);
+            }}
+          >
+            Recevoir plutôt un lien par e-mail
+          </button>
         </form>
       ) : (
         <form onSubmit={verifyCode} className="card space-y-4 p-5">

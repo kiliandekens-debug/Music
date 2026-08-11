@@ -85,7 +85,14 @@ Security constatée depuis l'extérieur, pas seulement déclarée.
 Dans [Authentication → Providers](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/auth/providers), gardez uniquement
 `Email` activé.
 
-L'application se connecte par lien envoyé par e-mail (pas de mot de passe).
+Deux façons de se connecter :
+
+- **Lien par e-mail**, sans mot de passe à retenir. Le lien doit être ouvert
+  sur l'appareil qui l'a demandé : la preuve cryptographique reste dans ce
+  navigateur.
+- **Mot de passe**, à définir une fois dans *Paramètres → Compte*. Les
+  connexions suivantes ne dépendent plus d'aucun e-mail ni d'aucune URL de
+  redirection — c'est la voie la plus commode depuis un téléphone.
 Une fois **votre** compte créé, désactivez les inscriptions publiques dans
 **Authentication → Sign In / Providers → Allow new users to sign up** :
 l'application est personnelle et n'affiche aucun écran d'inscription.

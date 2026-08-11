@@ -91,6 +91,8 @@ function sessionFor(user) {
   };
 }
 
+const PASSWORDS = new Map(); // email -> mot de passe (harnais uniquement)
+
 // --- Stockage en mémoire ------------------------------------------------------
 
 const FILES = new Map(); // path -> { buffer, contentType }
@@ -198,6 +200,17 @@ const server = http.createServer(async (req, res) => {
 
     if (path === "/auth/v1/token") {
       const grant = url.searchParams.get("grant_type");
+      if (grant === "password") {
+        const email = String(payload.email ?? "").toLowerCase();
+        const user = USERS.get(email);
+        if (!user || PASSWORDS.get(email) !== payload.password) {
+          return json(res, 400, {
+            error: "invalid_grant",
+            error_description: "Invalid login credentials",
+          });
+        }
+        return json(res, 200, sessionFor(user));
+      }
       if (grant === "refresh_token") {
         const id = String(payload.refresh_token ?? "").replace("refresh-", "");
         const user = users.find((u) => u.id === id) ?? [...USERS.values()].find((u) => u.id === id);
@@ -207,11 +220,24 @@ const server = http.createServer(async (req, res) => {
       return json(res, 400, { error: "unsupported_grant_type" });
     }
 
-    if (path === "/auth/v1/user") {
+    if (path === "/auth/v1/user" && req.method === "GET") {
       const claims = bearer(req);
       if (!claims) return json(res, 401, { message: "invalid token" });
       const user = [...USERS.values()].find((u) => u.id === claims.sub);
       if (!user) return json(res, 401, { message: "user not found" });
+      return json(res, 200, sessionFor(user).user);
+    }
+
+    // Définition d'un mot de passe (PUT /auth/v1/user)
+    if (path === "/auth/v1/user" && req.method === "PUT") {
+      const claims = bearer(req);
+      if (!claims) return json(res, 401, { message: "invalid token" });
+      const user = [...USERS.values()].find((u) => u.id === claims.sub);
+      if (!user) return json(res, 401, { message: "user not found" });
+      if (payload.password) {
+        PASSWORDS.set(user.email.toLowerCase(), payload.password);
+        console.log(`[auth] mot de passe défini pour ${user.email}`);
+      }
       return json(res, 200, sessionFor(user).user);
     }
 

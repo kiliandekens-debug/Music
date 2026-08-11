@@ -879,8 +879,42 @@ function TemplatesTab() {
 
 function AccountTab() {
   const router = useRouter();
+  const toast = useToast();
   const { userEmail, profile, tracks, labels, submissions, sessions } = useData();
   const [signingOut, setSigningOut] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  /*
+   * Définir un mot de passe rend les connexions suivantes indépendantes de
+   * l'e-mail : plus de lien à ouvrir, ce qui est nettement plus commode depuis
+   * un téléphone.
+   */
+  async function savePassword() {
+    if (password.length < 8) {
+      setPasswordError("Huit caractères minimum.");
+      return;
+    }
+    if (password !== confirmation) {
+      setPasswordError("Les deux saisies diffèrent.");
+      return;
+    }
+    setSavingPassword(true);
+    setPasswordError(null);
+    try {
+      const { error } = await getSupabase().auth.updateUser({ password });
+      if (error) throw error;
+      setPassword("");
+      setConfirmation("");
+      toast.success("Mot de passe enregistré");
+    } catch (e) {
+      setPasswordError(e instanceof Error ? e.message : "Enregistrement impossible");
+    } finally {
+      setSavingPassword(false);
+    }
+  }
 
   async function signOut() {
     setSigningOut(true);
@@ -912,6 +946,41 @@ function AccountTab() {
           <IconLogout size={16} />
           Se déconnecter
         </Button>
+      </Card>
+
+      <Card className="p-4">
+        <SectionTitle title="Mot de passe" className="mb-3" />
+        <p className="mb-4 text-[13px] leading-relaxed text-muted">
+          Facultatif. Une fois défini, vous pourrez vous connecter directement avec votre
+          adresse et ce mot de passe, sans attendre d&apos;e-mail ni ouvrir de lien — plus
+          pratique sur iPhone.
+        </p>
+        <div className="space-y-3">
+          <Field label="Nouveau mot de passe" hint="Huit caractères minimum.">
+            <Input
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
+          <Field label="Confirmation" error={passwordError}>
+            <Input
+              type="password"
+              autoComplete="new-password"
+              value={confirmation}
+              onChange={(e) => setConfirmation(e.target.value)}
+            />
+          </Field>
+          <Button
+            variant="primary"
+            loading={savingPassword}
+            disabled={!password || !confirmation}
+            onClick={() => void savePassword()}
+          >
+            Enregistrer le mot de passe
+          </Button>
+        </div>
       </Card>
 
       <Card className="p-4">
