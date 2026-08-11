@@ -28,12 +28,14 @@ export function SignInForm() {
     setBusy(true);
     setError(null);
     try {
-      const siteUrl =
-        process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? window.location.origin;
+      // L'origine du navigateur est toujours la bonne : localhost en
+      // développement, le domaine de production, ou l'URL d'un déploiement de
+      // prévisualisation. Une variable d'environnement figée se tromperait dès
+      // qu'on change d'environnement.
       const { error: otpError } = await getSupabase().auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: `${siteUrl}/auth/callback?suivant=${encodeURIComponent(nextPath)}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?suivant=${encodeURIComponent(nextPath)}`,
         },
       });
       if (otpError) throw otpError;

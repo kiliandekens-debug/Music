@@ -114,16 +114,45 @@ de relance par défaut, une première track et quelques labels.
 
 ---
 
-## Déploiement
+## Déploiement sur Vercel
 
-Compatible Vercel sans configuration particulière :
+Rien à configurer côté build : Vercel reconnaît Next.js tout seul. La branche
+du dépôt est déjà la branche par défaut, elle sera donc déployée en production.
 
-1. Importez le dépôt.
-2. Ajoutez les trois variables d'environnement de `.env.example`
-   (`NEXT_PUBLIC_SITE_URL` doit pointer sur l'URL de production).
-3. Déployez.
+**1. Importer le dépôt** sur [vercel.com/new](https://vercel.com/new) →
+*Import Git Repository* → `kiliandekens-debug/Music`.
 
-Ajoutez ensuite l'URL de production dans les **Redirect URLs** de Supabase.
+**2. Ajouter deux variables d'environnement** (écran *Environment Variables*,
+avant de cliquer *Deploy*) :
+
+| Nom                             | Valeur                                  |
+| ------------------------------- | --------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | `https://blglfpyecmlepybusdrz.supabase.co`             |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | votre clé `sb_publishable_…`            |
+
+C'est tout : l'URL de retour des liens de connexion est déduite du navigateur,
+elle n'a pas à être configurée et fonctionne aussi sur les déploiements de
+prévisualisation.
+
+**3. Déployer**, puis noter l'URL obtenue (`https://….vercel.app`).
+
+**4. Autoriser cette URL côté Supabase**, dans
+[Authentication → URL Configuration](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/auth/url-configuration) :
+
+- *Site URL* : `https://votre-app.vercel.app`
+- *Redirect URLs* : ajoutez ces deux lignes
+
+```
+https://votre-app.vercel.app/auth/callback
+https://*-votre-compte.vercel.app/auth/callback
+```
+
+La seconde couvre les déploiements de prévisualisation, dont l'URL change à
+chaque commit. Sans ces entrées, le lien reçu par e-mail sera refusé.
+
+> Le service worker n'est actif qu'en production : c'est donc sur Vercel, et
+> non en local, que l'installation sur l'écran d'accueil de l'iPhone
+> fonctionnera.
 
 ---
 

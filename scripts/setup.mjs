@@ -8,7 +8,7 @@
  *     stockage sont bien en place.
  *
  * Ce qui reste manuel, faute d'accès à votre compte : créer le projet Supabase
- * et copier trois valeurs depuis son tableau de bord.
+ * et copier deux valeurs depuis son tableau de bord.
  *
  * Utilisation :
  *   npm run setup
@@ -344,10 +344,6 @@ async function main() {
       console.log(c.yellow("\n  ⚠ Cette URL ne ressemble pas à une URL Supabase, je la garde tout de même.\n"));
     }
     anonKey = await askSecret("  Clé anon / publishable (masquée) : ");
-    const site =
-      (await ask("  URL publique de l'application [http://localhost:3000] : ")).trim() ||
-      "http://localhost:3000";
-
     if (!url || !anonKey) {
       console.log(c.red("\n  L'URL et la clé anon sont indispensables. Abandon.\n"));
       process.exit(1);
@@ -396,8 +392,7 @@ async function main() {
 
     const contents =
       `NEXT_PUBLIC_SUPABASE_URL=${url}\n` +
-      `NEXT_PUBLIC_SUPABASE_ANON_KEY=${anonKey}\n` +
-      `NEXT_PUBLIC_SITE_URL=${site}\n`;
+      `NEXT_PUBLIC_SUPABASE_ANON_KEY=${anonKey}\n`;
 
     if (existsSync(ENV_FILE)) {
       const replace = (

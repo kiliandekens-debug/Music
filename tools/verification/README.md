@@ -45,7 +45,6 @@ node tools/verification/supabase-harness.mjs
 # 4. L'application, pointée sur le harnais
 NEXT_PUBLIC_SUPABASE_URL=http://localhost:5555 \
 NEXT_PUBLIC_SUPABASE_ANON_KEY=harness-anon-key \
-NEXT_PUBLIC_SITE_URL=http://localhost:3111 \
 npm run dev -- -p 3111
 ```
 
