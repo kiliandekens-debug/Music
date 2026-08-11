@@ -45,6 +45,37 @@ export function SignInForm() {
     return `La connexion a échoué : ${linkError}`;
   })();
 
+  /**
+   * Les erreurs de Supabase reviennent en anglais et sans piste d'action.
+   * On les traduit et on oriente vers la solution, la limite d'envoi étant
+   * vite atteinte sur le plan gratuit.
+   */
+  function translateAuthError(message: string): string {
+    if (/rate limit|too many requests/i.test(message)) {
+      return (
+        "Trop d'e-mails demandés en peu de temps : Supabase bloque les envois pendant " +
+        "un moment. Connectez-vous plutôt avec un mot de passe, ou réessayez dans une heure."
+      );
+    }
+    if (/only request this after (\d+) seconds?/i.test(message)) {
+      const seconds = message.match(/after (\d+) seconds?/i)?.[1] ?? "quelques";
+      return `Un e-mail vient d'être envoyé. Patientez ${seconds} secondes avant d'en redemander un.`;
+    }
+    if (/signups? not allowed|signup is disabled/i.test(message)) {
+      return (
+        "Les inscriptions sont désactivées sur ce projet. Créez le compte depuis le tableau " +
+        "de bord Supabase (Authentication → Users), puis connectez-vous avec un mot de passe."
+      );
+    }
+    if (/invalid email|unable to validate email/i.test(message)) {
+      return "Cette adresse e-mail ne semble pas valide.";
+    }
+    if (/error sending|smtp/i.test(message)) {
+      return "L'e-mail n'a pas pu être envoyé. Connectez-vous avec un mot de passe en attendant.";
+    }
+    return message;
+  }
+
   async function sendLink(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -64,7 +95,7 @@ export function SignInForm() {
       setSent(true);
       setStep("code");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Envoi impossible");
+      setError(translateAuthError(e instanceof Error ? e.message : "Envoi impossible"));
     } finally {
       setBusy(false);
     }
@@ -163,7 +194,11 @@ export function SignInForm() {
               onChange={(e) => setEmail(e.target.value)}
             />
           </Field>
-          {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+          {error ? (
+            <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-[13px] leading-relaxed text-danger">
+              {error}
+            </p>
+          ) : null}
           <Button type="submit" variant="primary" size="lg" className="w-full" loading={busy}>
             Recevoir le lien de connexion
           </Button>
