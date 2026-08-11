@@ -39,25 +39,22 @@ Quelques partis pris :
 
 ## Installation
 
-### 1. Créer le projet Supabase
+Le projet Supabase de cette application est **`blglfpyecmlepybusdrz`**. Les liens ci-dessous
+pointent directement dessus.
 
-Sur [supabase.com](https://supabase.com), créez un projet. C'est la seule étape
-qui demande votre compte ; le reste est automatisé.
-
-### 2. Lancer l'installation guidée
+### 1. Lancer l'installation guidée
 
 ```bash
 npm install
 npm run setup
 ```
 
-Le script vous demande trois valeurs, puis fait le reste :
+Le script propose déjà l'URL du projet ; il vous reste deux valeurs à coller :
 
-| Valeur                | Où la trouver                                          |
-| --------------------- | ------------------------------------------------------ |
-| URL du projet         | Project Settings → API                                 |
-| Clé **anon**          | Project Settings → API                                 |
-| Chaîne de connexion   | Project Settings → Database → Connection string → URI  |
+| Valeur              | Où la trouver                                                     |
+| ------------------- | ----------------------------------------------------------------- |
+| Clé **anon**        | [Settings → API](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/settings/api)                                 |
+| Chaîne de connexion | [Settings → Database → Connection string → URI](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/settings/database) |
 
 Il écrit `.env.local`, applique la migration, puis vérifie que les 22 tables,
 la Row Level Security, les politiques d'accès, le bucket de stockage et le
@@ -68,16 +65,17 @@ Deux garde-fous : la saisie des secrets n'apparaît pas à l'écran, et le scrip
 clé `anon` — elle contournerait la Row Level Security.
 
 Si vous préférez ne pas confier la chaîne de connexion au script, laissez la
-question vide et exécutez `supabase/migrations/0001_init.sql` dans le SQL Editor
-de Supabase. Vous pourrez contrôler le résultat avec :
+question vide, puis collez le contenu de `supabase/migrations/0001_init.sql`
+dans le [SQL Editor](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/sql/new). Vous pourrez contrôler le résultat avec :
 
 ```bash
 npm run setup -- --verifier
 ```
 
-### 3. Configurer l'authentification
+### 2. Configurer l'authentification
 
-Dans **Authentication → Providers**, gardez uniquement `Email` activé.
+Dans [Authentication → Providers](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/auth/providers), gardez uniquement
+`Email` activé.
 
 L'application se connecte par lien envoyé par e-mail (pas de mot de passe).
 Une fois **votre** compte créé, désactivez les inscriptions publiques dans
@@ -85,13 +83,14 @@ Une fois **votre** compte créé, désactivez les inscriptions publiques dans
 l'application est personnelle et n'affiche aucun écran d'inscription.
 
 Pour pouvoir aussi vous connecter avec un code à 6 chiffres (pratique sur
-iPhone), ajoutez `{{ .Token }}` au modèle d'e-mail « Magic Link » dans
-**Authentication → Email Templates**.
+iPhone), ajoutez `{{ .Token }}` au modèle « Magic Link » dans
+[Email Templates](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/auth/templates).
 
-Dans **Authentication → URL Configuration**, ajoutez vos URL de redirection :
-`http://localhost:3000/auth/callback` et celle de votre déploiement.
+Dans [URL Configuration](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/auth/url-configuration), ajoutez vos URL de
+redirection : `http://localhost:3000/auth/callback` et celle de votre
+déploiement.
 
-### 4. Lancer
+### 3. Lancer
 
 ```bash
 npm run dev

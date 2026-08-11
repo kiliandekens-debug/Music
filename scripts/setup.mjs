@@ -27,6 +27,17 @@ import pg from "pg";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const MIGRATION = resolve(root, "supabase/migrations/0001_init.sql");
 const ENV_FILE = resolve(root, ".env.local");
+const ENV_EXAMPLE = resolve(root, ".env.example");
+
+/** Valeur d'exemple d'une variable, proposée par défaut à la saisie. */
+function exampleValue(name) {
+  if (!existsSync(ENV_EXAMPLE)) return "";
+  const line = readFileSync(ENV_EXAMPLE, "utf8")
+    .split(/\r?\n/)
+    .find((l) => l.startsWith(`${name}=`));
+  const value = line?.slice(name.length + 1).trim() ?? "";
+  return /^votre_|^https:\/\/votre-/.test(value) ? "" : value;
+}
 
 const EXPECTED_TABLES = [
   "profiles", "workspaces", "stages", "tracks", "track_tasks",
@@ -210,7 +221,15 @@ async function main() {
   let anonKey = "";
 
   if (!verifyOnly) {
-    url = (await ask("  URL du projet (https://xxx.supabase.co) : ")).trim();
+    const knownUrl = exampleValue("NEXT_PUBLIC_SUPABASE_URL");
+    url =
+      (
+        await ask(
+          knownUrl
+            ? `  URL du projet [${knownUrl}] : `
+            : "  URL du projet (https://xxx.supabase.co) : ",
+        )
+      ).trim() || knownUrl;
     if (!/^https:\/\/[^\s]+\.supabase\.(co|in)/.test(url)) {
       console.log(c.yellow("\n  ⚠ Cette URL ne ressemble pas à une URL Supabase, je la garde tout de même.\n"));
     }
