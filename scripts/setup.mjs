@@ -199,6 +199,88 @@ function report(state) {
   );
 }
 
+/** Valeur d'une variable dans .env.local. */
+function envValue(name) {
+  if (!existsSync(ENV_FILE)) return "";
+  const line = readFileSync(ENV_FILE, "utf8")
+    .split(/\r?\n/)
+    .find((l) => l.startsWith(`${name}=`));
+  return line?.slice(name.length + 1).trim() ?? "";
+}
+
+/**
+ * Contrôle à distance, avec la seule clé publique.
+ *
+ * L'existence d'une table se déduit de l'erreur renvoyée : « relation
+ * inexistante » si la migration n'a pas tourné, « permission refusée » si la
+ * table est là mais protégée. Ce second cas est le bon : il prouve du même
+ * coup qu'un visiteur non authentifié n'accède à rien.
+ */
+async function inspectViaRest(url, key) {
+  const base = `${url.replace(/\/$/, "")}/rest/v1`;
+  const result = { missing: [], protected: [], readable: [], unknown: [] };
+
+  for (const table of EXPECTED_TABLES) {
+    let response;
+    try {
+      response = await fetch(`${base}/${table}?select=*&limit=1`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+      });
+    } catch (error) {
+      throw new Error(`réseau : ${error.message}`);
+    }
+
+    const body = await response.text();
+
+    // Une clé invalide est rejetée avant toute lecture : inutile de conclure
+    // quoi que ce soit sur les tables, il faut le dire franchement.
+    if (/PGRST301|JWSError|JWTIssuedAtFuture|Invalid API key|invalid signature/i.test(body)) {
+      throw new Error(
+        "clé refusée par Supabase — vérifiez NEXT_PUBLIC_SUPABASE_ANON_KEY dans .env.local",
+      );
+    }
+
+    if (response.ok) {
+      // Une lecture anonyme qui renvoie des lignes signalerait une RLS absente.
+      const rows = (() => {
+        try {
+          return JSON.parse(body);
+        } catch {
+          return [];
+        }
+      })();
+      if (Array.isArray(rows) && rows.length > 0) result.readable.push(table);
+      else result.protected.push(table);
+    } else if (/does not exist|42P01/i.test(body)) {
+      result.missing.push(table);
+    } else if (/permission denied|42501|JWT|Invalid API key/i.test(body)) {
+      result.protected.push(table);
+    } else {
+      result.unknown.push(`${table} (${response.status})`);
+    }
+  }
+
+  return result;
+}
+
+function reportRest(state) {
+  const present = state.protected.length + state.readable.length;
+  const ok = (v) => (v ? c.green("✓") : c.red("✗"));
+
+  console.log(`  ${ok(present === EXPECTED_TABLES.length)} ${present}/${EXPECTED_TABLES.length} tables présentes`);
+  if (state.missing.length > 0) {
+    console.log(c.dim(`     manquantes : ${state.missing.join(", ")}`));
+  }
+  console.log(
+    `  ${ok(state.readable.length === 0)} aucune donnée lisible sans être connecté` +
+      (state.readable.length > 0 ? c.red(` — exposées : ${state.readable.join(", ")}`) : ""),
+  );
+  if (state.unknown.length > 0) {
+    console.log(c.yellow(`  ⚠ réponses inattendues : ${state.unknown.join(", ")}`));
+  }
+  return present === EXPECTED_TABLES.length && state.readable.length === 0;
+}
+
 async function main() {
   const verifyOnly = process.argv.includes("--verifier");
 
@@ -206,6 +288,34 @@ async function main() {
 
   if (verifyOnly) {
     console.log(c.dim("  Mode vérification : rien ne sera modifié.\n"));
+
+    // Contrôle sans mot de passe : URL + clé publique suffisent.
+    const url = envValue("NEXT_PUBLIC_SUPABASE_URL");
+    const key = envValue("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+
+    if (url && key) {
+      console.log(c.dim(`  Interrogation de ${url}\n`));
+      try {
+        const state = await inspectViaRest(url, key);
+        const good = reportRest(state);
+        console.log(
+          good
+            ? c.green("\n  La base est en place et correctement cloisonnée.\n")
+            : c.yellow("\n  Contrôle incomplet : voir ci-dessus.\n"),
+        );
+        if (good) {
+          console.log("  Vous pouvez lancer " + c.bold("npm run dev") + ".\n");
+          closeInput();
+          return;
+        }
+      } catch (error) {
+        console.log(c.yellow(`  ⚠ contrôle à distance impossible (${error.message})\n`));
+      }
+    } else {
+      console.log(
+        c.dim("  .env.local introuvable ou incomplet : lancez d'abord « npm run setup ».\n"),
+      );
+    }
   } else {
     console.log(
       "  Ouvrez votre projet sur " +

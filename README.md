@@ -68,11 +68,17 @@ n'en a aucun besoin. Si l'une d'elles a été exposée, révoquez-la depuis
 
 Si vous préférez ne pas confier la chaîne de connexion au script, laissez la
 question vide, puis collez le contenu de `supabase/migrations/0001_init.sql`
-dans le [SQL Editor](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/sql/new). Vous pourrez contrôler le résultat avec :
+dans le [SQL Editor](https://supabase.com/dashboard/project/blglfpyecmlepybusdrz/sql/new).
+
+Dans tous les cas, ce contrôle ne réclame que l'URL et la clé publique :
 
 ```bash
 npm run setup -- --verifier
 ```
+
+Il interroge les 22 tables et vérifie deux choses : qu'elles existent, et
+qu'un visiteur non authentifié n'en lit **aucune** ligne — c'est la Row Level
+Security constatée depuis l'extérieur, pas seulement déclarée.
 
 ### 2. Configurer l'authentification
 
