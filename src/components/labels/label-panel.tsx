@@ -92,7 +92,7 @@ export function LabelPanel({
           </div>
 
           <section>
-            <h3 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted">
+            <h3 className="mb-2 text-label font-semibold uppercase tracking-wide text-muted">
               Coordonnées
             </h3>
             <dl className="grid gap-3 sm:grid-cols-2">
@@ -132,7 +132,7 @@ export function LabelPanel({
                   href={label.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-ink-soft hover:border-line-strong"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-sm text-ink-soft hover:border-line-strong"
                 >
                   <IconLink size={14} />
                   Site
@@ -143,7 +143,7 @@ export function LabelPanel({
                   href={label.demo_form_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-ink-soft hover:border-line-strong"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-sm text-ink-soft hover:border-line-strong"
                 >
                   <IconLink size={14} />
                   Formulaire de démo
@@ -152,7 +152,7 @@ export function LabelPanel({
               {label.email ? (
                 <a
                   href={`mailto:${label.email}`}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-ink-soft hover:border-line-strong"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-sm text-ink-soft hover:border-line-strong"
                 >
                   <IconMail size={14} />
                   Écrire
@@ -164,7 +164,7 @@ export function LabelPanel({
                   href={value.startsWith("http") ? value : `https://${value}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[12px] text-ink-soft hover:border-line-strong"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-sm text-ink-soft hover:border-line-strong"
                 >
                   {network}
                 </a>
@@ -174,17 +174,17 @@ export function LabelPanel({
 
           {label.notes ? (
             <section>
-              <h3 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-muted">
+              <h3 className="mb-2 text-label font-semibold uppercase tracking-wide text-muted">
                 Notes personnelles
               </h3>
-              <p className="whitespace-pre-wrap rounded-lg border border-line bg-surface-2 px-3 py-2.5 text-[13px] leading-relaxed text-ink-soft">
+              <p className="whitespace-pre-wrap rounded-lg border border-line bg-surface-2 px-3 py-2.5 text-sm leading-relaxed text-ink-soft">
                 {label.notes}
               </p>
             </section>
           ) : null}
 
           <section>
-            <h3 className="mb-2 flex items-center gap-2 text-[13px] font-semibold uppercase tracking-wide text-muted">
+            <h3 className="mb-2 flex items-center gap-2 text-label font-semibold uppercase tracking-wide text-muted">
               Historique des envois
               <Badge>{submissions.length}</Badge>
             </h3>

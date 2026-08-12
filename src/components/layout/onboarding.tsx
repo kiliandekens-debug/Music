@@ -167,7 +167,7 @@ export function Onboarding() {
           </span>
           <div>
             <h1 className="text-lg font-semibold tracking-tight">Bienvenue dans {APP_NAME}</h1>
-            <p className="text-[13px] text-muted">
+            <p className="text-sm text-muted">
               Quatre réglages rapides, modifiables à tout moment.
             </p>
           </div>
@@ -190,8 +190,8 @@ export function Onboarding() {
           {step === 0 ? (
             <section className="space-y-4">
               <div>
-                <h2 className="text-[15px] font-semibold">Vos alias</h2>
-                <p className="mt-1 text-[13px] text-muted">
+                <h2 className="text-base font-semibold">Vos alias</h2>
+                <p className="mt-1 text-sm text-muted">
                   Un alias par identité ou par type de projet. Décochez ce dont vous n&apos;avez
                   pas besoin.
                 </p>
@@ -246,8 +246,8 @@ export function Onboarding() {
           {step === 1 ? (
             <section className="space-y-4">
               <div>
-                <h2 className="text-[15px] font-semibold">Les étapes de votre pipeline</h2>
-                <p className="mt-1 text-[13px] text-muted">
+                <h2 className="text-base font-semibold">Les étapes de votre pipeline</h2>
+                <p className="mt-1 text-sm text-muted">
                   L&apos;ordre et les noms restent modifiables depuis les Paramètres.
                 </p>
               </div>
@@ -287,8 +287,8 @@ export function Onboarding() {
           {step === 2 ? (
             <section className="space-y-4">
               <div>
-                <h2 className="text-[15px] font-semibold">Relances des labels</h2>
-                <p className="mt-1 text-[13px] text-muted">
+                <h2 className="text-base font-semibold">Relances des labels</h2>
+                <p className="mt-1 text-sm text-muted">
                   Délai proposé par défaut après un envoi. Aucun e-mail n&apos;est jamais envoyé
                   automatiquement : l&apos;application crée uniquement un rappel.
                 </p>
@@ -325,8 +325,8 @@ export function Onboarding() {
           {step === 3 ? (
             <section className="space-y-4">
               <div>
-                <h2 className="text-[15px] font-semibold">Votre première track</h2>
-                <p className="mt-1 text-[13px] text-muted">
+                <h2 className="text-base font-semibold">Votre première track</h2>
+                <p className="mt-1 text-sm text-muted">
                   Facultatif — vous pourrez en créer à tout moment.
                 </p>
               </div>
@@ -360,7 +360,7 @@ export function Onboarding() {
                   onChange={(e) => setLabelsText(e.target.value)}
                   rows={4}
                   placeholder={"Label A, demo@labela.com\nLabel B"}
-                  className="w-full rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm placeholder:text-faint focus:border-accent focus:outline-none"
+                  className="w-full rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm placeholder:text-muted focus:border-accent focus:outline-none"
                 />
               </Field>
             </section>
@@ -376,7 +376,7 @@ export function Onboarding() {
             Retour
           </Button>
           <div className="flex items-center gap-2">
-            <span className="text-[12px] text-faint">
+            <span className="text-sm text-muted">
               Étape {step + 1} sur {steps.length}
             </span>
             {step < steps.length - 1 ? (

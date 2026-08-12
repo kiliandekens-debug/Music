@@ -113,7 +113,7 @@ export function RespondedDialog({
                 aria-pressed={responseType === value}
                 onClick={() => setResponseType(value)}
                 className={cn(
-                  "flex-1 rounded-lg border px-3 py-2 text-[13px] font-medium transition-colors duration-100",
+                  "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors duration-100",
                   responseType === value
                     ? value === "positive"
                       ? "border-ok bg-ok/15 text-ok"

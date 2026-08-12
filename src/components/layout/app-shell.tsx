@@ -18,8 +18,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-dvh items-center justify-center px-6">
         <div className="card max-w-md space-y-4 p-6 text-center">
           <h1 className="text-base font-semibold">Chargement impossible</h1>
-          <p className="text-[13px] leading-relaxed text-muted">{error}</p>
-          <p className="text-[12px] leading-relaxed text-faint">
+          <p className="text-sm leading-relaxed text-muted">{error}</p>
+          <p className="text-sm leading-relaxed text-muted">
             Vérifiez que les migrations SQL ont bien été appliquées à votre projet Supabase.
           </p>
           <Button variant="primary" onClick={() => void reload()} className="mx-auto">
@@ -72,7 +72,7 @@ function Sidebar() {
         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft text-accent">
           <IconMusic size={17} />
         </span>
-        <span className="text-[16px] font-semibold tracking-tight">{APP_NAME}</span>
+        <span className="text-base font-semibold tracking-tight">{APP_NAME}</span>
       </Link>
 
       <nav className="flex flex-col gap-1 px-3 py-2">
@@ -85,7 +85,7 @@ function Sidebar() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-colors duration-100",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-base font-medium transition-colors duration-100",
                 active
                   ? "bg-surface-3 text-ink"
                   : "text-muted hover:bg-surface-2 hover:text-ink-soft",
@@ -107,7 +107,7 @@ function Sidebar() {
             "flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-100",
             pathname.startsWith("/parametres")
               ? "bg-surface-3 text-ink"
-              : "text-faint hover:bg-surface-2 hover:text-ink-soft",
+              : "text-muted hover:bg-surface-2 hover:text-ink-soft",
           )}
         >
           <IconSettings size={17} />
@@ -126,12 +126,12 @@ function MobileHeader() {
         <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-soft text-accent">
           <IconMusic size={15} />
         </span>
-        <span className="text-[15px] font-semibold tracking-tight">{APP_NAME}</span>
+        <span className="text-base font-semibold tracking-tight">{APP_NAME}</span>
       </Link>
       <Link
         href="/parametres"
         aria-label="Paramètres"
-        className="touch-target flex h-9 w-9 items-center justify-center rounded-lg text-faint hover:text-ink"
+        className="touch-target flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:text-ink"
       >
         <IconSettings size={18} />
       </Link>
@@ -154,7 +154,7 @@ function MobileNav() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 px-1 py-2.5 text-[11px] font-medium transition-colors duration-100",
+                "flex flex-1 flex-col items-center gap-1 px-1 py-2.5 text-label font-medium transition-colors duration-100",
                 active ? "text-accent" : "text-muted",
               )}
             >

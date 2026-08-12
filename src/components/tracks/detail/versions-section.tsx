@@ -156,7 +156,7 @@ export function VersionsSection({ track }: { track: Track }) {
           <IconUpload size={16} />
           Ajouter une version
         </Button>
-        <span className="text-[12px] text-faint">MP3, M4A ou WAV</span>
+        <span className="text-sm text-muted">MP3, M4A ou WAV</span>
       </div>
 
       {versions.length === 0 ? (
@@ -177,12 +177,12 @@ export function VersionsSection({ track }: { track: Track }) {
                 className="min-w-0 flex-1 text-left"
               >
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="truncate text-[13px] font-medium text-ink">{version.name}</span>
+                  <span className="truncate text-sm font-medium text-ink">{version.name}</span>
                   <Badge>{AUDIO_KIND_LABEL[version.kind]}</Badge>
                   {version.is_main ? <Badge tone="accent">Version principale</Badge> : null}
                   {currentId === version.id ? <Badge tone="info">Sélectionnée</Badge> : null}
                 </div>
-                <p className="mt-1 text-[11px] text-faint">
+                <p className="mt-1 text-label text-muted">
                   {[
                     formatDate(version.created_at),
                     version.duration_seconds ? formatClock(version.duration_seconds) : null,
@@ -193,7 +193,7 @@ export function VersionsSection({ track }: { track: Track }) {
                     .join(" · ")}
                 </p>
                 {version.comment ? (
-                  <p className="mt-1.5 text-[12px] leading-snug text-ink-soft">{version.comment}</p>
+                  <p className="mt-1.5 text-sm leading-snug text-ink-soft">{version.comment}</p>
                 ) : null}
               </button>
 
@@ -236,7 +236,7 @@ export function VersionsSection({ track }: { track: Track }) {
       >
         <div className="space-y-4">
           {isLargeWav ? (
-            <div className="flex items-start gap-2.5 rounded-lg border border-warn/30 bg-warn/10 p-3 text-[13px] text-ink-soft">
+            <div className="flex items-start gap-2.5 rounded-lg border border-warn/30 bg-warn/10 p-3 text-sm text-ink-soft">
               <IconWarning size={18} className="mt-0.5 shrink-0 text-warn" />
               <p>
                 Ce WAV pèse {formatBytes(pending?.size ?? 0)}. Pour l&apos;écoute courante, un MP3

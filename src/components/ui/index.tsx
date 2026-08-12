@@ -37,9 +37,9 @@ const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
-  sm: "h-8 px-2.5 text-[13px] gap-1.5 rounded-lg",
+  sm: "h-8 px-2.5 text-sm gap-1.5 rounded-lg",
   md: "h-9 px-3.5 text-sm gap-2 rounded-lg",
-  lg: "h-11 px-5 text-[15px] gap-2 rounded-xl",
+  lg: "h-11 px-5 text-base gap-2 rounded-xl",
 };
 
 export function Button({
@@ -157,7 +157,7 @@ export function Field({
       {label ? (
         <label
           htmlFor={controlId}
-          className="text-[12px] font-medium uppercase tracking-wide text-muted"
+          className="text-label font-medium uppercase tracking-wide text-muted"
         >
           {label}
           {required ? <span className="ml-1 text-danger">*</span> : null}
@@ -165,11 +165,11 @@ export function Field({
       ) : null}
       {control}
       {error ? (
-        <p id={describedById} className="text-[12px] text-danger">
+        <p id={describedById} className="text-sm text-danger">
           {error}
         </p>
       ) : hint ? (
-        <p id={describedById} className="text-[12px] text-faint">
+        <p id={describedById} className="text-sm text-muted">
           {hint}
         </p>
       ) : null}
@@ -178,7 +178,7 @@ export function Field({
 }
 
 const FIELD_BASE =
-  "w-full rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink placeholder:text-faint " +
+  "w-full rounded-lg border border-line bg-surface-2 px-3 text-sm text-ink placeholder:text-muted " +
   "transition-colors duration-100 hover:border-line-strong focus:border-accent focus:outline-none " +
   "disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -211,7 +211,7 @@ export function Select({
       </select>
       <IconChevronDown
         size={16}
-        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-faint"
+        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted"
       />
     </div>
   );
@@ -277,7 +277,7 @@ export function SearchInput({
 }) {
   return (
     <div className={cn("relative", className)}>
-      <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
+      <IconSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
       <input
         type="search"
         value={value}
@@ -290,7 +290,7 @@ export function SearchInput({
           type="button"
           aria-label="Effacer la recherche"
           onClick={() => onChange("")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-faint hover:text-ink"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-ink"
         >
           <IconClose size={14} />
         </button>
@@ -326,7 +326,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-[11px] font-medium leading-4 whitespace-nowrap",
+        "inline-flex items-center gap-1.5 rounded-md border px-1.5 py-0.5 text-label font-medium leading-4 whitespace-nowrap",
         TONE_CLASSES[tone],
         className,
       )}
@@ -365,9 +365,9 @@ export function ProgressBar({
     <div className={cn("flex flex-col gap-1", className)}>
       {label || showValue ? (
         <div className="flex items-baseline justify-between gap-2">
-          {label ? <span className="text-[11px] text-muted">{label}</span> : <span />}
+          {label ? <span className="text-label text-muted">{label}</span> : <span />}
           {showValue ? (
-            <span className="tabular text-[11px] font-medium text-ink-soft">{clamped} %</span>
+            <span className="tabular text-label font-medium text-ink-soft">{clamped} %</span>
           ) : null}
         </div>
       ) : null}
@@ -384,6 +384,46 @@ export function ProgressBar({
           style={{ width: `${clamped}%`, backgroundColor: colors[tone] }}
         />
       </div>
+    </div>
+  );
+}
+
+/**
+ * Barre de progression nue, colorable par l'appelant.
+ * Elle porte les attributs ARIA d'une jauge : une progression qui n'existe que
+ * visuellement n'existe pas pour un lecteur d'écran.
+ */
+export function Meter({
+  value,
+  color,
+  label,
+  className,
+  thin,
+}: {
+  value: number;
+  color?: string;
+  label?: string;
+  className?: string;
+  thin?: boolean;
+}) {
+  const clamped = Math.max(0, Math.min(100, Math.round(value)));
+  return (
+    <div
+      role="progressbar"
+      aria-valuenow={clamped}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={label ?? "Progression"}
+      className={cn(
+        "overflow-hidden rounded-full bg-surface-3",
+        thin ? "h-1" : "h-1.5",
+        className,
+      )}
+    >
+      <div
+        className="h-full rounded-full transition-[width] duration-300"
+        style={{ width: `${clamped}%`, backgroundColor: color ?? "var(--accent)" }}
+      />
     </div>
   );
 }
@@ -414,9 +454,9 @@ export function SectionTitle({
 }) {
   return (
     <div className={cn("flex items-center justify-between gap-3", className)}>
-      <h2 className="flex items-baseline gap-2 text-[13px] font-semibold uppercase tracking-wide text-muted">
+      <h2 className="flex items-baseline gap-2 text-label font-semibold uppercase tracking-wide text-muted">
         {title}
-        {count !== undefined ? <span className="tabular text-faint">{count}</span> : null}
+        {count !== undefined ? <span className="tabular text-muted">{count}</span> : null}
       </h2>
       {action}
     </div>
@@ -438,7 +478,7 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-3 py-3 text-[13px] text-muted", className)}>
+    <div className={cn("flex flex-wrap items-center gap-3 py-3 text-sm text-muted", className)}>
       <span>{title}</span>
       {action}
     </div>
@@ -475,24 +515,26 @@ export function CollapsibleBlock({
           onClick={onToggle}
           aria-expanded={open}
           aria-controls={bodyId}
-          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3.5 text-left transition-colors duration-100 hover:bg-surface-2"
+          className="flex min-w-0 flex-1 items-center gap-3 px-5 py-4 text-left transition-colors duration-100 hover:bg-surface-2"
         >
           <IconChevronDown
             size={16}
             className={cn(
-              "shrink-0 text-faint transition-transform duration-150",
+              "shrink-0 text-muted transition-transform duration-150",
               !open && "-rotate-90",
             )}
           />
-          <span className="text-[15px] font-semibold text-ink">{title}</span>
-          {summary ? (
-            <span className="ml-auto truncate text-[12px] text-faint">{summary}</span>
+          <span className="text-base font-semibold text-ink">{title}</span>
+          {/* Le résumé dit ce qu'il y a dedans quand c'est fermé ; une fois
+              ouvert, le contenu le dit mieux que lui. */}
+          {summary && !open ? (
+            <span className="ml-auto truncate text-sm text-muted">{summary}</span>
           ) : null}
         </button>
         {action}
       </div>
       {open ? (
-        <div id={bodyId} className="border-t border-line px-4 py-4">
+        <div id={bodyId} className="border-t border-line/70 px-5 py-5">
           {children}
         </div>
       ) : null}
@@ -535,13 +577,13 @@ export function Tabs({
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "relative shrink-0 whitespace-nowrap px-3 py-2.5 text-[13px] font-medium transition-colors duration-100",
+              "relative shrink-0 whitespace-nowrap px-3 py-2.5 text-sm font-medium transition-colors duration-100",
               isActive ? "text-ink" : "text-muted hover:text-ink-soft",
             )}
           >
             {tab.label}
             {tab.count !== undefined && tab.count > 0 ? (
-              <span className="tabular ml-1.5 text-faint">{tab.count}</span>
+              <span className="tabular ml-1.5 text-muted">{tab.count}</span>
             ) : null}
             {isActive ? (
               <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-accent" />
@@ -582,7 +624,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(option.value)}
           className={cn(
             "rounded-md font-medium transition-colors duration-100",
-            size === "sm" ? "h-7 px-2 text-[12px]" : "h-8 px-3 text-[13px]",
+            size === "sm" ? "h-7 px-2 text-sm" : "h-8 px-3 text-sm",
             value === option.value
               ? "bg-surface-3 text-ink"
               : "text-muted hover:text-ink-soft",
@@ -668,11 +710,11 @@ export function Modal({
       >
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-[15px] font-semibold text-ink">
+            <h2 id={titleId} className="text-base font-semibold text-ink">
               {title}
             </h2>
             {description ? (
-              <p className="mt-0.5 text-[13px] text-muted">{description}</p>
+              <p className="mt-0.5 text-sm text-muted">{description}</p>
             ) : null}
           </div>
           <IconButton label="Fermer" onClick={onClose}>
@@ -731,10 +773,10 @@ export function SidePanel({
       >
         <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 pt-safe">
           <div className="min-w-0">
-            <div id={titleId} className="truncate text-[15px] font-semibold text-ink">
+            <div id={titleId} className="truncate text-base font-semibold text-ink">
               {title}
             </div>
-            {subtitle ? <div className="mt-0.5 text-[13px] text-muted">{subtitle}</div> : null}
+            {subtitle ? <div className="mt-0.5 text-sm text-muted">{subtitle}</div> : null}
           </div>
           <IconButton label="Fermer" onClick={onClose}>
             <IconClose size={18} />
@@ -878,12 +920,12 @@ export function MenuItem({
         close();
       }}
       className={cn(
-        "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors duration-100",
+        "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm transition-colors duration-100",
         destructive ? "text-danger hover:bg-danger/10" : "text-ink-soft hover:bg-surface-3 hover:text-ink",
         disabled && "cursor-not-allowed opacity-40 hover:bg-transparent",
       )}
     >
-      {icon ? <span className="shrink-0 text-faint">{icon}</span> : null}
+      {icon ? <span className="shrink-0 text-muted">{icon}</span> : null}
       <span className="truncate">{children}</span>
     </button>
   );
@@ -891,7 +933,7 @@ export function MenuItem({
 
 export function MenuLabel({ children }: { children: ReactNode }) {
   return (
-    <div className="px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-faint">
+    <div className="px-2.5 pb-1 pt-2 text-label font-semibold uppercase tracking-wide text-muted">
       {children}
     </div>
   );
@@ -906,7 +948,7 @@ export function MenuSeparator() {
 export function KeyValue({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-[11px] uppercase tracking-wide text-faint">{label}</dt>
+      <dt className="text-label uppercase tracking-wide text-muted">{label}</dt>
       <dd className="text-sm text-ink-soft">{children}</dd>
     </div>
   );
@@ -925,7 +967,7 @@ export function StatTile({
 }) {
   return (
     <div className="card px-3.5 py-3">
-      <p className="text-[11px] uppercase tracking-wide text-faint">{label}</p>
+      <p className="text-label uppercase tracking-wide text-muted">{label}</p>
       <p
         className={cn(
           "tabular mt-1 text-xl font-semibold",
@@ -934,7 +976,7 @@ export function StatTile({
       >
         {value}
       </p>
-      {hint ? <p className="mt-0.5 text-[12px] text-faint">{hint}</p> : null}
+      {hint ? <p className="mt-0.5 text-sm text-muted">{hint}</p> : null}
     </div>
   );
 }

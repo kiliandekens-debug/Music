@@ -98,7 +98,7 @@ export function ArtworkCard({ track }: { track: Track }) {
               onError={() => setPreview(null)}
             />
           ) : (
-            <span className="px-2 text-center text-[11px] text-faint">Aucune image</span>
+            <span className="px-2 text-center text-label text-muted">Aucune image</span>
           )}
         </div>
 

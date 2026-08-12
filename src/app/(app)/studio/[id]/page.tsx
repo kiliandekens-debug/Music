@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { accentHex } from "@/lib/constants";
 import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import { useLocalState } from "@/lib/hooks";
@@ -23,16 +24,16 @@ import {
   CollapsibleBlock,
   ConfirmDialog,
   IconButton,
+  Meter,
   Menu,
   MenuItem,
   MenuSeparator,
   Modal,
-  ProgressBar,
-  Select,
   cn,
 } from "@/components/ui";
 import { IconChevronLeft, IconEdit, IconMore } from "@/components/ui/icons";
 import { AudioPlayerProvider } from "@/components/audio/player";
+import { TrackArtwork } from "@/components/tracks/track-artwork";
 import { TrackForm } from "@/components/tracks/track-form";
 import { ProductionBlock } from "@/components/tracks/detail/production-block";
 import { LabelsBlock } from "@/components/tracks/detail/labels-block";
@@ -79,7 +80,7 @@ export default function TrackDetailPage() {
   if (!track) {
     return (
       <div className="mx-auto w-full max-w-[960px] px-4 py-8 lg:px-8">
-        <p className="flex flex-wrap items-center gap-3 text-[14px] text-muted">
+        <p className="flex flex-wrap items-center gap-3 text-base text-muted">
           Cette track est introuvable.
           <Link href="/studio">
             <Button variant="primary" size="sm">
@@ -92,6 +93,7 @@ export default function TrackDetailPage() {
   }
 
   const workspace = track.workspace_id ? workspaceById.get(track.workspace_id) : undefined;
+  const color = accentHex(workspace?.color);
   const stage = track.stage_id ? stageById.get(track.stage_id) : undefined;
   const column = columnOf(stage);
   const progress = progressByTrack.get(track.id);
@@ -149,28 +151,49 @@ export default function TrackDetailPage() {
 
   return (
     <AudioPlayerProvider versions={versions}>
-      <div className="mx-auto w-full max-w-[960px] px-4 py-6 lg:px-8 lg:py-8">
+      <div className="mx-auto w-full max-w-[1080px] px-5 py-6 lg:px-10 lg:py-9">
         <Link
           href="/studio"
-          className="mb-4 inline-flex items-center gap-1 text-[13px] text-muted hover:text-ink"
+          className="mb-5 inline-flex items-center gap-1 text-sm text-muted transition-colors hover:text-ink"
         >
           <IconChevronLeft size={16} />
           Mes tracks
         </Link>
 
-        <header className="mb-6">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-[26px] font-semibold leading-tight tracking-tight">
+        <header className="mb-8">
+          <div className="flex flex-wrap items-start gap-5">
+            <TrackArtwork
+              track={track}
+              color={color}
+              className="h-24 w-24 rounded-2xl lg:h-28 lg:w-28"
+              iconSize={30}
+            />
+
+            <div className="min-w-0 flex-1">
+              <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">
                 {track.title}
               </h1>
               {meta.length > 0 ? (
-                <p className="mt-1 text-[13px] text-muted">{meta.join(" · ")}</p>
+                <p className="mt-1.5 text-base text-muted">{meta.join(" · ")}</p>
+              ) : null}
+
+              {progress && progress.production.total > 0 ? (
+                <div className="mt-4 flex max-w-md items-center gap-3">
+                  <Meter
+                    className="flex-1"
+                    value={progress.production.percent}
+                    color={progress.production.percent >= 100 ? "var(--color-ok)" : color}
+                    label="Production"
+                  />
+                  <span className="tabular text-sm font-medium text-ink-soft">
+                    {progress.production.done} / {progress.production.total}
+                  </span>
+                </div>
               ) : null}
             </div>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
+              <Button variant="outline" onClick={() => setEditing(true)}>
                 <IconEdit size={15} />
                 Modifier
               </Button>
@@ -202,60 +225,52 @@ export default function TrackDetailPage() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Select
-              value={column}
-              onChange={(e) => void changeColumn(e.target.value as ColumnId)}
-              aria-label="Étape"
-              className="w-auto"
-              wrapperClassName="shrink-0"
-            >
-              {COLUMNS.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-
-            {column === "en_cours" ? (
-              <Select
-                value={stage?.key ?? ""}
-                onChange={(e) => void changeSubStep(e.target.value as SubStep)}
-                aria-label="Sous-étape"
-                className="w-auto"
-                wrapperClassName="shrink-0"
-              >
-                {SUB_STEPS.map((step) => (
-                  <option key={step} value={step}>
-                    {SUB_STEP_LABEL[step]}
-                  </option>
-                ))}
-              </Select>
-            ) : null}
-
-            {progress && progress.production.total > 0 ? (
-              <ProgressBar
-                className="min-w-40 flex-1"
-                value={progress.production.percent}
-                tone={progress.production.percent >= 100 ? "ok" : "accent"}
+          {/* L'étape se choisit d'un clic, pas dans une liste déroulante. */}
+          <div className="mt-6 flex flex-wrap items-center gap-1.5">
+            {COLUMNS.map((c) => (
+              <StepChip
+                key={c.id}
+                label={c.name}
+                active={c.id === column}
+                onClick={() => void changeColumn(c.id)}
               />
+            ))}
+            {column === "en_cours" ? (
+              <>
+                <span className="mx-1.5 h-5 w-px bg-line" aria-hidden />
+                {SUB_STEPS.map((step) => (
+                  <StepChip
+                    key={step}
+                    small
+                    label={SUB_STEP_LABEL[step]}
+                    active={stage?.key === step}
+                    onClick={() => void changeSubStep(step)}
+                  />
+                ))}
+              </>
             ) : null}
           </div>
 
           {track.is_blocked ? (
-            <p className="mt-3 rounded-lg border border-danger/25 bg-danger/5 px-3 py-2 text-[13px] text-danger">
+            <p className="mt-4 rounded-xl border border-danger/25 bg-danger/[0.07] px-4 py-2.5 text-sm text-danger">
               Bloquée{track.blocked_reason ? ` : ${track.blocked_reason}` : ""}
             </p>
           ) : null}
 
           {nextAction ? (
-            <p className={cn("mt-3 text-[14px]", ACTION_TONE[nextAction.tone])}>
-              Prochaine action : {nextAction.text}
+            <p
+              className={cn(
+                "mt-4 flex items-center gap-2.5 text-base",
+                ACTION_TONE[nextAction.tone],
+              )}
+            >
+              <span className="text-label uppercase tracking-[0.08em] text-muted">Ensuite</span>
+              <span className="font-medium">{nextAction.text}</span>
             </p>
           ) : null}
         </header>
 
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           <CollapsibleBlock
             title="Production"
             summary={
@@ -326,5 +341,35 @@ export default function TrackDetailPage() {
         }}
       />
     </AudioPlayerProvider>
+  );
+}
+
+/** Pastille d'étape : un clic suffit, aucun menu à ouvrir. */
+function StepChip({
+  label,
+  active,
+  onClick,
+  small,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  small?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        "rounded-full border font-medium transition-colors duration-100",
+        small ? "px-3 py-1.5 text-sm" : "px-4 py-2 text-sm",
+        active
+          ? "border-transparent bg-accent text-white"
+          : "border-line bg-surface text-muted hover:text-ink-soft",
+      )}
+    >
+      {label}
+    </button>
   );
 }

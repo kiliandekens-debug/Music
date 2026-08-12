@@ -120,13 +120,13 @@ export function CorrectionsSection({ track }: { track: Track }) {
 
       <Card className="p-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[12px] text-muted">Correction à</span>
+          <span className="text-sm text-muted">Correction à</span>
           <input
             value={timecode}
             onChange={(e) => setTimecode(e.target.value)}
             placeholder={formatClock(currentTime)}
             aria-label="Horodatage"
-            className="tabular h-8 w-20 rounded-lg border border-line bg-surface-2 px-2 text-center text-[13px] focus:border-accent focus:outline-none"
+            className="tabular h-8 w-20 rounded-lg border border-line bg-surface-2 px-2 text-center text-sm focus:border-accent focus:outline-none"
           />
           <Select
             value={category}
@@ -150,7 +150,7 @@ export function CorrectionsSection({ track }: { track: Track }) {
               </option>
             ))}
           </Select>
-          <span className="text-[11px] text-faint">
+          <span className="text-label text-muted">
             sur « {current?.name ?? "aucune version"} »
           </span>
         </div>
@@ -167,14 +167,14 @@ export function CorrectionsSection({ track }: { track: Track }) {
             }}
             rows={2}
             placeholder="Le lead est trop faible et le kick perd de l'impact…"
-            className="flex-1 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm placeholder:text-faint focus:border-accent focus:outline-none"
+            className="flex-1 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm placeholder:text-muted focus:border-accent focus:outline-none"
           />
           <Button variant="primary" loading={busy} onClick={() => void add()} disabled={!text.trim()}>
             <IconPlus size={16} />
             Ajouter
           </Button>
         </div>
-        <p className="mt-1.5 text-[11px] text-faint">
+        <p className="mt-1.5 text-label text-muted">
           Laissez l&apos;horodatage vide pour utiliser la position actuelle du lecteur
           ({formatClock(currentTime)}). Ctrl + Entrée pour ajouter.
         </p>
@@ -207,9 +207,9 @@ export function CorrectionsSection({ track }: { track: Track }) {
         grouped.map(([versionId, list]) => (
           <Card key={versionId} className="overflow-hidden">
             <header className="border-b border-line px-4 py-2.5">
-              <h3 className="text-[13px] font-medium text-ink">
+              <h3 className="text-sm font-medium text-ink">
                 {versionById.get(versionId)?.name ?? "Version supprimée"}
-                <span className="ml-2 text-[11px] font-normal text-faint">
+                <span className="ml-2 text-label font-normal text-muted">
                   {list.length} correction{list.length > 1 ? "s" : ""}
                 </span>
               </h3>
@@ -220,7 +220,7 @@ export function CorrectionsSection({ track }: { track: Track }) {
                   <button
                     type="button"
                     onClick={() => goTo(note.audio_version_id, note.position_seconds)}
-                    className="tabular shrink-0 rounded-md bg-surface-3 px-1.5 py-0.5 text-[12px] font-medium text-accent hover:brightness-125"
+                    className="tabular shrink-0 rounded-md bg-surface-3 px-1.5 py-0.5 text-sm font-medium text-accent hover:brightness-125"
                     title="Écouter à cet instant"
                   >
                     {formatClock(note.position_seconds)}
@@ -229,8 +229,8 @@ export function CorrectionsSection({ track }: { track: Track }) {
                   <div className="min-w-0 flex-1">
                     <p
                       className={cn(
-                        "text-[13px] leading-snug",
-                        note.resolved_at ? "text-faint line-through" : "text-ink-soft",
+                        "text-sm leading-snug",
+                        note.resolved_at ? "text-muted line-through" : "text-ink-soft",
                       )}
                     >
                       {note.text}

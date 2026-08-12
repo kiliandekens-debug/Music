@@ -27,7 +27,7 @@ const TIMING_TONE: Record<string, string> = {
   warn: "text-warn",
   ok: "text-ok",
   info: "text-muted",
-  neutre: "text-faint",
+  neutre: "text-muted",
 };
 
 /**
@@ -69,7 +69,7 @@ export function SubmissionList({
 
   if (submissions.length === 0) {
     return (
-      <p className="py-2 text-[13px] text-muted">
+      <p className="py-2 text-sm text-muted">
         {emptyMessage ?? "Aucun envoi enregistré."}
       </p>
     );
@@ -88,13 +88,13 @@ export function SubmissionList({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   {show === "label" ? (
-                    <span className="truncate text-[14px] font-medium text-ink">
+                    <span className="truncate text-base font-medium text-ink">
                       {label?.name ?? "Label supprimé"}
                     </span>
                   ) : (
                     <Link
                       href={`/studio/${submission.track_id}`}
-                      className="truncate text-[14px] font-medium text-ink hover:text-accent-ink"
+                      className="truncate text-base font-medium text-ink hover:text-accent-ink"
                     >
                       {track?.title ?? "Track supprimée"}
                     </Link>
@@ -104,13 +104,13 @@ export function SubmissionList({
                   </Badge>
                 </div>
 
-                <p className={cn("mt-0.5 text-[12px]", TIMING_TONE[timing.tone])}>
+                <p className={cn("mt-0.5 text-sm", TIMING_TONE[timing.tone])}>
                   {timing.label}
                   {submission.sent_at ? ` · envoyé le ${formatDate(submission.sent_at, "d MMM")}` : ""}
                 </p>
 
                 {submission.response_message ? (
-                  <p className="mt-1.5 rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-[12px] leading-snug text-ink-soft">
+                  <p className="mt-1.5 rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 text-sm leading-snug text-ink-soft">
                     {submission.response_message}
                   </p>
                 ) : null}
@@ -128,7 +128,7 @@ export function SubmissionList({
                         status: "en_attente",
                       });
                   }}
-                  label={<span className="text-[12px] text-muted">Répondu</span>}
+                  label={<span className="text-sm text-muted">Répondu</span>}
                 />
 
                 <Menu

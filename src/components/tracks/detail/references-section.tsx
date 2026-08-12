@@ -182,19 +182,19 @@ export function ReferencesSection({ track }: { track: Track }) {
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate text-[13px] font-medium text-ink">
+                    <span className="truncate text-sm font-medium text-ink">
                       {reference.title}
                     </span>
                     <Badge>{REFERENCE_KIND_LABEL[reference.kind]}</Badge>
                   </div>
                   {reference.description ? (
-                    <p className="mt-1 text-[12px] leading-snug text-muted">
+                    <p className="mt-1 text-sm leading-snug text-muted">
                       {reference.description}
                     </p>
                   ) : null}
                   {reference.analyze_for.length > 0 ? (
                     <div className="mt-1.5 flex flex-wrap gap-1">
-                      <span className="text-[11px] text-faint">À analyser :</span>
+                      <span className="text-label text-muted">À analyser :</span>
                       {reference.analyze_for.map((item) => (
                         <Badge key={item} tone="accent">
                           {ANALYZE_FOR_LABEL[item] ?? item}
@@ -208,7 +208,7 @@ export function ReferencesSection({ track }: { track: Track }) {
                         href={reference.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[12px] text-accent hover:underline"
+                        className="inline-flex items-center gap-1 text-sm text-accent hover:underline"
                       >
                         <IconLink size={13} />
                         Ouvrir le lien
@@ -218,7 +218,7 @@ export function ReferencesSection({ track }: { track: Track }) {
                       <button
                         type="button"
                         onClick={() => void openStoredFile(reference.file_path!)}
-                        className="inline-flex items-center gap-1 text-[12px] text-accent hover:underline"
+                        className="inline-flex items-center gap-1 text-sm text-accent hover:underline"
                       >
                         <IconFolder size={13} />
                         {reference.file_name ?? "Ouvrir le fichier"}
@@ -247,22 +247,22 @@ export function ReferencesSection({ track }: { track: Track }) {
       {trackFiles.length > 0 ? (
         <Card className="overflow-hidden">
           <header className="border-b border-line px-4 py-2.5">
-            <h3 className="text-[13px] font-semibold uppercase tracking-wide text-muted">
+            <h3 className="text-label font-semibold uppercase tracking-wide text-muted">
               Fichiers joints
             </h3>
           </header>
           <ul className="divide-y divide-line">
             {trackFiles.map((file) => (
               <li key={file.id} className="flex items-center gap-3 px-4 py-2.5">
-                <IconFolder size={16} className="shrink-0 text-faint" />
+                <IconFolder size={16} className="shrink-0 text-muted" />
                 <button
                   type="button"
                   onClick={() => void openStoredFile(file.file_path)}
-                  className="min-w-0 flex-1 truncate text-left text-[13px] text-ink-soft hover:text-accent"
+                  className="min-w-0 flex-1 truncate text-left text-sm text-ink-soft hover:text-accent"
                 >
                   {file.name}
                 </button>
-                <span className="shrink-0 text-[11px] text-faint">
+                <span className="shrink-0 text-label text-muted">
                   {formatBytes(file.file_size)} · {formatDate(file.created_at, "d MMM")}
                 </span>
                 <IconButton label="Supprimer" onClick={() => void destroyFile(file)}>
@@ -317,7 +317,7 @@ export function ReferencesSection({ track }: { track: Track }) {
               <input
                 type="file"
                 onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
-                className="w-full text-[13px] text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface-3 file:px-3 file:py-1.5 file:text-[13px] file:text-ink"
+                className="w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface-3 file:px-3 file:py-1.5 file:text-sm file:text-ink"
               />
             </Field>
           )}
@@ -344,7 +344,7 @@ export function ReferencesSection({ track }: { track: Track }) {
                       )
                     }
                     className={cn(
-                      "rounded-lg border px-2.5 py-1 text-[12px] transition-colors",
+                      "rounded-lg border px-2.5 py-1 text-sm transition-colors",
                       active
                         ? "border-accent bg-accent-soft text-accent-ink"
                         : "border-line text-muted hover:text-ink",

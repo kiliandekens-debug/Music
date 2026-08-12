@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { daysSince, formatDate } from "@/lib/format";
-import { computeProgress } from "@/lib/domain/progress";
 import { useData } from "@/lib/store/data";
 import {
   Button,
@@ -12,7 +11,6 @@ import {
   MenuItem,
   MenuLabel,
   Modal,
-  ProgressBar,
   Select,
   cn,
 } from "@/components/ui";
@@ -48,7 +46,6 @@ export function ProductionBlock({ track }: { track: Track }) {
     [tasks, track.id],
   );
 
-  const progress = computeProgress(checklist);
   const open = checklist.filter((t) => t.status === "a_faire" || t.status === "en_cours");
   const nextTask = open.find((t) => t.status === "en_cours") ?? open[0];
 
@@ -102,26 +99,12 @@ export function ProductionBlock({ track }: { track: Track }) {
   return (
     <div className="space-y-6">
       <section>
-        {checklist.length > 0 ? (
-          <ProgressBar
-            className="mb-3"
-            value={progress.percent}
-            label={`${progress.done} sur ${progress.total} terminées`}
-            tone={progress.percent >= 100 ? "ok" : "accent"}
-          />
-        ) : null}
-
-        {nextTask ? (
-          <p className="mb-3 rounded-lg border border-accent/25 bg-accent-soft/50 px-3 py-2 text-[13px] text-accent-ink">
-            Prochaine tâche : <span className="font-medium">{nextTask.title}</span>
-          </p>
-        ) : null}
-
-        <ul className="divide-y divide-line">
+        <ul className="divide-y divide-line/70">
           {checklist.map((task) => (
             <TaskRow
               key={task.id}
               task={task}
+              next={task.id === nextTask?.id}
               onToggle={() => void toggle(task)}
               onEdit={() => setEditing(task)}
               onDelete={() => void remove("track_tasks", task.id)}
@@ -130,7 +113,7 @@ export function ProductionBlock({ track }: { track: Track }) {
         </ul>
 
         {checklist.length === 0 ? (
-          <p className="py-2 text-[13px] text-muted">Aucune tâche de production.</p>
+          <p className="py-2 text-sm text-muted">Aucune tâche de production.</p>
         ) : null}
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -147,7 +130,7 @@ export function ProductionBlock({ track }: { track: Track }) {
       </section>
 
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">Notes de travail</h3>
+        <h3 className="mb-2 text-sm font-semibold text-muted">Notes de travail</h3>
         <NotesField
           trackId={track.id}
           value={track.notes}
@@ -156,12 +139,12 @@ export function ProductionBlock({ track }: { track: Track }) {
       </section>
 
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">Versions audio</h3>
+        <h3 className="mb-2 text-sm font-semibold text-muted">Versions audio</h3>
         <VersionsSection track={track} />
       </section>
 
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">Corrections</h3>
+        <h3 className="mb-2 text-sm font-semibold text-muted">Corrections</h3>
         <CorrectionsSection track={track} />
       </section>
 
@@ -223,11 +206,13 @@ export function ProductionBlock({ track }: { track: Track }) {
 
 function TaskRow({
   task,
+  next,
   onToggle,
   onEdit,
   onDelete,
 }: {
   task: TrackTask;
+  next?: boolean;
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -236,18 +221,23 @@ function TaskRow({
   const late = task.due_date && !done ? (daysSince(task.due_date) ?? 0) > 0 : false;
 
   return (
-    <li className="flex items-center gap-3 py-2">
+    <li className="group flex items-center gap-3 py-2.5">
       <Checkbox checked={done} onChange={onToggle} />
       <span
         className={cn(
-          "min-w-0 flex-1 truncate text-[14px]",
-          done ? "text-faint line-through" : "text-ink-soft",
+          "min-w-0 flex-1 truncate text-base",
+          done ? "text-muted line-through" : next ? "font-medium text-ink" : "text-ink-soft",
         )}
       >
         {task.title}
       </span>
+      {next ? (
+        <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-label font-medium text-accent-ink">
+          à faire
+        </span>
+      ) : null}
       {task.due_date && !done ? (
-        <span className={cn("shrink-0 text-[12px]", late ? "text-danger" : "text-faint")}>
+        <span className={cn("shrink-0 text-sm", late ? "text-danger" : "text-muted")}>
           {formatDate(task.due_date, "d MMM")}
         </span>
       ) : null}

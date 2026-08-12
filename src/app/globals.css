@@ -7,46 +7,72 @@
    ========================================================================== */
 
 @theme {
-  --color-canvas: #08080a;
-  --color-surface: #101014;
-  --color-surface-2: #16161c;
-  --color-surface-3: #1d1d25;
-  --color-line: #26262f;
-  --color-line-strong: #35353f;
-  --color-ink: #ececf1;
-  --color-ink-soft: #b4b4c0;
-  --color-muted: #7f7f8d;
-  --color-faint: #5a5a66;
+  /* Surfaces : elles montent franchement au-dessus du fond, pour qu'une carte
+     soit un objet posé sur un plan et non un rectangle bordé. L'écart de
+     luminance entre le fond et une carte est d'un facteur 1,9 — il était de
+     1,05 auparavant, ce qui ne se voyait pas. */
+  --color-canvas: #0b0a0f;
+  --color-surface: #17151f;
+  --color-surface-2: #211e2c;
+  --color-surface-3: #2c2839;
+  --color-line: #322d42;
+  --color-line-strong: #453e59;
+
+  /* Trois niveaux de texte, tous au-dessus du seuil de lisibilité de 4,5:1.
+     Le quatrième niveau, trop pâle pour être lu, a été supprimé. */
+  --color-ink: #f2f0f7;
+  --color-ink-soft: #b8b2c8;
+  --color-muted: #8e87a0;
 
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
 
-  --color-ok: #34d399;
+  --color-ok: #4ade9e;
   --color-warn: #fbbf24;
   --color-danger: #fb7185;
-  --color-info: #60a5fa;
+  --color-info: #7dd3fc;
 
   --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
     Consolas, monospace;
 
-  --radius-card: 12px;
+  /* Échelle typographique : six valeurs, un rôle chacune. Il y en avait huit
+     entre 11 et 15 px, ce qui empêchait toute hiérarchie. */
+  --text-label: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-title: 20px;
+  --text-section: 28px;
+  --text-page: 34px;
+
+  --radius-card: 14px;
 
   --ease-out-quick: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root {
   --accent: #8b5cf6;
-  --accent-soft: color-mix(in oklab, var(--accent) 16%, transparent);
-  --accent-ink: color-mix(in oklab, var(--accent) 78%, white);
+  --accent-soft: color-mix(in oklab, var(--accent) 20%, transparent);
+  /* L'accent pur ne passe pas le contraste sur du petit texte : la version
+     « encre » est éclaircie pour rester lisible à 14 px. */
+  --accent-ink: color-mix(in oklab, var(--accent) 58%, white);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -18px rgba(0, 0, 0, 0.9);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.45), 0 18px 40px -20px rgba(0, 0, 0, 0.95);
   color-scheme: dark;
 }
 
 html,
 body {
   height: 100%;
+}
+
+/* Les titres ne suivent pas l'interligne du texte courant : sans cela, un
+   titre de 34 px occupe 56 px de haut et repousse le contenu hors de l'écran. */
+h1, h2, h3 {
+  line-height: 1.15;
+  text-wrap: balance;
 }
 
 body {
@@ -194,18 +220,31 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* Utilitaires maison */
+/* Une carte tient par sa matière et son ombre, pas par son trait. */
 .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-line);
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 .card-hover {
-  transition: border-color 0.12s var(--ease-out-quick),
-    background-color 0.12s var(--ease-out-quick);
+  transition: background-color 0.14s var(--ease-out-quick),
+    box-shadow 0.14s var(--ease-out-quick),
+    transform 0.14s var(--ease-out-quick);
 }
 .card-hover:hover {
-  border-color: var(--color-line-strong);
   background: var(--color-surface-2);
+  box-shadow: var(--shadow-lift);
+}
+@media (hover: hover) {
+  .card-hover:hover {
+    transform: translateY(-1px);
+  }
+}
+/* Carte creuse : sert de réceptacle (colonne, zone de dépôt), pas d'objet. */
+.well {
+  background: color-mix(in oklab, var(--color-surface) 55%, transparent);
+  border-radius: 16px;
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;

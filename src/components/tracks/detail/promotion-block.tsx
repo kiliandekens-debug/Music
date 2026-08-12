@@ -12,7 +12,7 @@ import type { Track } from "@/lib/types";
 export function PromotionBlock({ track, onEdit }: { track: Track; onEdit: () => void }) {
   if (!track.release_date) {
     return (
-      <div className="flex flex-wrap items-center gap-3 py-1 text-[13px] text-muted">
+      <div className="flex flex-wrap items-center gap-3 py-1 text-sm text-muted">
         <span>Aucune date de sortie enregistrée.</span>
         <Button size="sm" variant="outline" onClick={onEdit}>
           Ajouter une date de sortie

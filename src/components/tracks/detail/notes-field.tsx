@@ -68,9 +68,9 @@ export function NotesField({
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
         placeholder={placeholder}
-        className="w-full resize-y rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm leading-relaxed placeholder:text-faint focus:border-accent focus:outline-none"
+        className="w-full resize-y rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm leading-relaxed placeholder:text-muted focus:border-accent focus:outline-none"
       />
-      {!saved ? <p className="mt-1 text-[11px] text-faint">Enregistrement…</p> : null}
+      {!saved ? <p className="mt-1 text-label text-muted">Enregistrement…</p> : null}
     </div>
   );
 }

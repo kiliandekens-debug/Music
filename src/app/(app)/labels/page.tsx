@@ -2,14 +2,12 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SUBMISSION_STATUS_LABEL, SUBMISSION_STATUS_TONE } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { submissionTiming } from "@/lib/domain/submissions";
 import { useDebounced, useLocalState } from "@/lib/hooks";
 import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import {
-  Badge,
   Button,
   Checkbox,
   IconButton,
@@ -26,12 +24,20 @@ import { RespondedDialog } from "@/components/labels/responded-dialog";
 import { LabelPanel } from "@/components/labels/label-panel";
 import type { Label, LabelSubmission } from "@/lib/types";
 
+const DOT_TONE: Record<string, string> = {
+  danger: "bg-danger",
+  warn: "bg-warn",
+  ok: "bg-ok",
+  info: "bg-line-strong",
+  neutre: "bg-line-strong",
+};
+
 const TIMING_TONE: Record<string, string> = {
   danger: "text-danger",
   warn: "text-warn",
   ok: "text-ok",
   info: "text-muted",
-  neutre: "text-faint",
+  neutre: "text-muted",
 };
 
 export default function LabelsPage() {
@@ -53,7 +59,7 @@ function LabelsContent() {
   const router = useRouter();
   const params = useSearchParams();
   const { labels, tracks, update } = useData();
-  const { submissionsByLabel, dueFollowups } = useDerived();
+  const { submissionsByLabel } = useDerived();
 
   const [search, setSearch] = useState("");
   const query = useDebounced(search, 180);
@@ -82,7 +88,6 @@ function LabelsContent() {
         }
         return true;
       })
-      .sort((a, b) => a.name.localeCompare(b.name, "fr"))
       .map((label) => {
         const last = (submissionsByLabel.get(label.id) ?? [])
           .filter((s) => !s.archived)
@@ -92,6 +97,29 @@ function LabelsContent() {
           last,
           trackTitle: last ? (tracks.find((t) => t.id === last.track_id)?.title ?? null) : null,
         };
+      })
+      /*
+       * Ce qui réclame une action passe devant, du plus en retard au moins
+       * pressé ; le reste suit par ordre alphabétique. Plus besoin d'un encart
+       * de rappels au-dessus du tableau : le tableau est le rappel.
+       */
+      .sort((a, b) => {
+        const rank = (row: Row) => {
+          if (!row.last) return 3;
+          const t = submissionTiming(row.last);
+          if (t.needsFollowup) return 0;
+          if (row.last.responded) return 2;
+          return 1;
+        };
+        const ra = rank(a);
+        const rb = rank(b);
+        if (ra !== rb) return ra - rb;
+        if (ra === 0) {
+          const la = submissionTiming(a.last!).followupOverdueDays ?? 0;
+          const lb = submissionTiming(b.last!).followupOverdueDays ?? 0;
+          if (la !== lb) return lb - la;
+        }
+        return a.label.name.localeCompare(b.label.name, "fr");
       });
   }, [labels, query, styleFilter, submissionsByLabel, tracks]);
 
@@ -114,12 +142,12 @@ function LabelsContent() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 py-6 lg:px-8 lg:py-8">
+    <div className="mx-auto w-full max-w-[1560px] px-5 py-6 lg:px-10 lg:py-9">
       <header className="mb-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-[26px] font-semibold tracking-tight">Labels</h1>
-          <Button variant="primary" onClick={() => setCreating(true)}>
-            <IconPlus size={16} />
+          <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">Labels</h1>
+          <Button variant="primary" size="lg" onClick={() => setCreating(true)}>
+            <IconPlus size={17} />
             Ajouter un label
           </Button>
         </div>
@@ -148,36 +176,8 @@ function LabelsContent() {
         </div>
       </header>
 
-      {dueFollowups.length > 0 ? (
-        <section className="mb-6">
-          <h2 className="mb-2 text-[13px] font-semibold text-muted">À relancer</h2>
-          <ul className="space-y-1.5">
-            {dueFollowups.slice(0, 4).map((submission) => {
-              const label = labels.find((l) => l.id === submission.label_id);
-              const track = tracks.find((t) => t.id === submission.track_id);
-              return (
-                <li
-                  key={submission.id}
-                  className="card flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-3"
-                >
-                  <span className="text-[14px] font-medium text-ink">
-                    {label?.name ?? "Label"}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[13px] text-muted">
-                    {track?.title ?? "—"} · {submissionTiming(submission).label}
-                  </span>
-                  <Button size="sm" variant="outline" onClick={() => openLabel(submission.label_id)}>
-                    Voir
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
-
       {rows.length === 0 ? (
-        <p className="flex flex-wrap items-center gap-3 py-3 text-[14px] text-muted">
+        <p className="flex flex-wrap items-center gap-3 py-3 text-base text-muted">
           {query.trim() || styleFilter !== "tous"
             ? "Aucun label ne correspond."
             : "Aucun label pour le moment."}
@@ -191,18 +191,15 @@ function LabelsContent() {
         <>
           {/* Ordinateur : un vrai tableau, lisible d'un coup d'œil */}
           <div className="card hidden overflow-x-auto lg:block">
-            <table className="w-full text-[13px]">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line text-left text-[11px] uppercase tracking-wide text-faint">
-                  <th className="px-4 py-2.5 font-medium">Label</th>
-                  <th className="px-3 py-2.5 font-medium">Contact</th>
-                  <th className="px-3 py-2.5 font-medium">Styles</th>
-                  <th className="px-3 py-2.5 font-medium">Dernière track</th>
-                  <th className="px-3 py-2.5 font-medium">Envoi</th>
-                  <th className="px-3 py-2.5 font-medium">Statut</th>
-                  <th className="px-3 py-2.5 font-medium">Suivi</th>
-                  <th className="px-3 py-2.5 font-medium">Répondu</th>
-                  <th className="px-3 py-2.5" />
+                <tr className="border-b border-line text-left text-label uppercase tracking-wide text-muted">
+                  <th className="px-5 py-3 font-medium">Label</th>
+                  <th className="px-4 py-3 font-medium">Dernière track</th>
+                  <th className="px-4 py-3 font-medium">Envoi</th>
+                  <th className="px-4 py-3 font-medium">Suivi</th>
+                  <th className="px-4 py-3 font-medium">Répondu</th>
+                  <th className="px-4 py-3" />
                 </tr>
               </thead>
               <tbody>
@@ -211,53 +208,52 @@ function LabelsContent() {
                   return (
                     <tr
                       key={label.id}
-                      className="border-b border-line last:border-0 hover:bg-surface-2"
+                      className="border-b border-line/60 last:border-0 hover:bg-surface-2"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3.5">
                         <button
                           type="button"
                           onClick={() => openLabel(label.id)}
-                          className="text-left text-[14px] font-medium text-ink hover:text-accent-ink"
+                          className="block text-left"
                         >
-                          {label.name}
+                          <span className="block text-base font-medium text-ink hover:text-accent-ink">
+                            {label.name}
+                          </span>
+                          <span className="block truncate text-sm text-muted">
+                            {[label.contact_name, label.genres.slice(0, 2).join(", ")]
+                              .filter(Boolean)
+                              .join(" · ") || "—"}
+                          </span>
                         </button>
                       </td>
-                      <td className="px-3 py-3 text-muted">
-                        {label.contact_name ?? "—"}
-                        {label.email ? (
-                          <p className="truncate text-[11px] text-faint">{label.email}</p>
-                        ) : null}
-                      </td>
-                      <td className="px-3 py-3 text-muted">
-                        {label.genres.length > 0 ? label.genres.join(", ") : "—"}
-                      </td>
-                      <td className="px-3 py-3 text-muted">{trackTitle ?? "—"}</td>
-                      <td className="px-3 py-3 text-muted">
+                      <td className="px-4 py-3.5 text-ink-soft">{trackTitle ?? "—"}</td>
+                      <td className="px-4 py-3.5 text-muted">
                         {last?.sent_at ? formatDate(last.sent_at, "d MMM yyyy") : "—"}
                       </td>
-                      <td className="px-3 py-3">
-                        {last ? (
-                          <Badge tone={SUBMISSION_STATUS_TONE[last.status]}>
-                            {SUBMISSION_STATUS_LABEL[last.status]}
-                          </Badge>
+                      <td className="px-4 py-3.5">
+                        {timing ? (
+                          <span className={cn("flex items-center gap-2", TIMING_TONE[timing.tone])}>
+                            <span
+                              className={cn("h-1.5 w-1.5 shrink-0 rounded-full", DOT_TONE[timing.tone])}
+                              aria-hidden
+                            />
+                            {timing.label}
+                          </span>
                         ) : (
-                          <span className="text-faint">—</span>
+                          <span className="text-muted">Jamais contacté</span>
                         )}
                       </td>
-                      <td className={cn("px-3 py-3", timing ? TIMING_TONE[timing.tone] : "text-faint")}>
-                        {timing ? timing.label : "Jamais contacté"}
-                      </td>
-                      <td className="px-3 py-3">
+                      <td className="px-4 py-3.5">
                         {last ? (
                           <Checkbox
                             checked={last.responded}
                             onChange={(checked) => setResponded(last, checked)}
                           />
                         ) : (
-                          <span className="text-faint">—</span>
+                          <span className="text-muted">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-3 text-right">
+                      <td className="px-4 py-3.5 text-right">
                         <RowMenu
                           label={label}
                           onOpen={() => openLabel(label.id)}
@@ -275,21 +271,21 @@ function LabelsContent() {
           </div>
 
           {/* Mobile : la même information, empilée */}
-          <ul className="space-y-2 lg:hidden">
+          <ul className="space-y-3 lg:hidden">
             {rows.map(({ label, last, trackTitle }) => {
               const timing = last ? submissionTiming(last) : null;
               return (
-                <li key={label.id} className="card p-3.5">
+                <li key={label.id} className="card p-4">
                   <div className="flex items-start justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => openLabel(label.id)}
                       className="min-w-0 text-left"
                     >
-                      <span className="block truncate text-[15px] font-medium text-ink">
+                      <span className="block truncate text-base font-medium text-ink">
                         {label.name}
                       </span>
-                      <span className="block truncate text-[12px] text-faint">
+                      <span className="block truncate text-sm text-muted">
                         {[label.contact_name, label.genres.join(", ")].filter(Boolean).join(" · ") ||
                           "—"}
                       </span>
@@ -305,23 +301,30 @@ function LabelsContent() {
                   </div>
 
                   {last ? (
-                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-line pt-2.5">
-                      <span className="text-[13px] text-ink-soft">{trackTitle ?? "—"}</span>
-                      <Badge tone={SUBMISSION_STATUS_TONE[last.status]}>
-                        {SUBMISSION_STATUS_LABEL[last.status]}
-                      </Badge>
-                      <span className={cn("text-[12px]", timing ? TIMING_TONE[timing.tone] : "")}>
-                        {timing?.label}
-                      </span>
-                      <Checkbox
-                        className="ml-auto"
-                        checked={last.responded}
-                        onChange={(checked) => setResponded(last, checked)}
-                        label={<span className="text-[12px] text-muted">Répondu</span>}
-                      />
+                    <div className="mt-3 space-y-2.5 border-t border-line/60 pt-3">
+                      <p className="flex items-center gap-2 text-sm">
+                        <span
+                          className={cn(
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            timing ? DOT_TONE[timing.tone] : "bg-line-strong",
+                          )}
+                          aria-hidden
+                        />
+                        <span className={timing ? TIMING_TONE[timing.tone] : "text-muted"}>
+                          {timing?.label}
+                        </span>
+                      </p>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="truncate text-sm text-ink-soft">{trackTitle ?? "—"}</span>
+                        <Checkbox
+                          checked={last.responded}
+                          onChange={(checked) => setResponded(last, checked)}
+                          label={<span className="text-sm text-muted">Répondu</span>}
+                        />
+                      </div>
                     </div>
                   ) : (
-                    <p className="mt-2 text-[12px] text-faint">Jamais contacté</p>
+                    <p className="mt-2 text-sm text-muted">Jamais contacté</p>
                   )}
                 </li>
               );

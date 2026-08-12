@@ -195,7 +195,7 @@ export function SubmissionForm({
         <div className="rounded-lg border border-warn/30 bg-warn/10 p-3">
           <div className="flex items-start gap-2.5">
             <IconWarning size={18} className="mt-0.5 shrink-0 text-warn" />
-            <div className="space-y-2 text-[13px] text-ink-soft">
+            <div className="space-y-2 text-sm text-ink-soft">
               <p>
                 Cette track a déjà été envoyée à ce label
                 {duplicates[0].sent_at ? ` le ${formatDate(duplicates[0].sent_at)}` : ""}.
@@ -272,7 +272,7 @@ export function SubmissionForm({
                     type="button"
                     onClick={() => applyFollowupPreset(days)}
                     className={cn(
-                      "rounded-lg border px-2.5 py-1 text-[12px] transition-colors",
+                      "rounded-lg border px-2.5 py-1 text-sm transition-colors",
                       followupDays === days && followupDate
                         ? "border-accent bg-accent-soft text-accent-ink"
                         : "border-line text-muted hover:text-ink",
@@ -285,7 +285,7 @@ export function SubmissionForm({
                   type="button"
                   onClick={() => applyFollowupPreset(null)}
                   className={cn(
-                    "rounded-lg border px-2.5 py-1 text-[12px] transition-colors",
+                    "rounded-lg border px-2.5 py-1 text-sm transition-colors",
                     !followupDate
                       ? "border-accent bg-accent-soft text-accent-ink"
                       : "border-line text-muted hover:text-ink",
@@ -301,7 +301,7 @@ export function SubmissionForm({
               onChange={(e) => setFollowupDate(e.target.value)}
               aria-label="Date de relance"
             />
-            <p className="text-[12px] text-faint">
+            <p className="text-sm text-muted">
               Un rappel est créé à cette date. Aucun e-mail n&apos;est envoyé automatiquement.
             </p>
           </div>
@@ -331,13 +331,13 @@ export function SubmissionForm({
               privateLink,
               message: message.trim() || undefined,
             })}
-            className="inline-flex h-9 items-center gap-2 rounded-lg border border-line px-3 text-[13px] text-ink-soft hover:border-line-strong hover:text-ink"
+            className="inline-flex h-9 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-soft hover:border-line-strong hover:text-ink"
           >
             <IconMail size={16} />
             Ouvrir dans mon application e-mail
           </a>
         ) : (
-          <span className="text-[12px] text-faint">
+          <span className="text-sm text-muted">
             {label ? "Aucune adresse e-mail sur ce label" : ""}
           </span>
         )}

@@ -120,7 +120,7 @@ export function ReleaseChecklist({ track }: { track: Track }) {
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-wrap items-center gap-3 py-2 text-[13px] text-muted">
+      <div className="flex flex-wrap items-center gap-3 py-2 text-sm text-muted">
         <span>Aucune étape de sortie préparée.</span>
         <Button size="sm" variant="primary" loading={busy} onClick={() => void generate()}>
           Générer la checklist
@@ -132,9 +132,9 @@ export function ReleaseChecklist({ track }: { track: Track }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-        {countdown ? <p className="text-[14px] font-medium text-ink">{countdown}</p> : null}
+        {countdown ? <p className="text-base font-medium text-ink">{countdown}</p> : null}
         {nextTask ? (
-          <p className="text-[13px] text-accent-ink">Prochaine action : {nextTask.title}</p>
+          <p className="text-sm text-accent-ink">Prochaine action : {nextTask.title}</p>
         ) : null}
       </div>
 
@@ -154,17 +154,17 @@ export function ReleaseChecklist({ track }: { track: Track }) {
               <Checkbox checked={done} onChange={() => void toggle(task)} />
               <span
                 className={cn(
-                  "min-w-0 flex-1 truncate text-[14px]",
-                  done ? "text-faint line-through" : "text-ink-soft",
+                  "min-w-0 flex-1 truncate text-base",
+                  done ? "text-muted line-through" : "text-ink-soft",
                 )}
               >
                 {task.title}
               </span>
-              <span className="shrink-0 text-[12px] text-faint">
+              <span className="shrink-0 text-sm text-muted">
                 {offsetLabel(task.offset_days)}
               </span>
               {task.due_date && !done ? (
-                <span className={cn("shrink-0 text-[12px]", late ? "text-danger" : "text-faint")}>
+                <span className={cn("shrink-0 text-sm", late ? "text-danger" : "text-muted")}>
                   {formatDate(task.due_date, "d MMM")}
                 </span>
               ) : null}
@@ -198,7 +198,7 @@ export function ReleaseChecklist({ track }: { track: Track }) {
               if (e.key === "Escape") setAdding(false);
             }}
             placeholder="Nouvelle étape puis Entrée"
-            className="h-9 flex-1 rounded-lg border border-line bg-surface-2 px-3 text-[13px] focus:border-accent focus:outline-none"
+            className="h-9 flex-1 rounded-lg border border-line bg-surface-2 px-3 text-sm focus:border-accent focus:outline-none"
           />
           <Button size="sm" variant="subtle" onClick={() => void addTask()}>
             Ajouter

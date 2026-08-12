@@ -108,7 +108,7 @@ function PreferencesTab() {
                   type="button"
                   onClick={() => setFollowup(days)}
                   className={cn(
-                    "rounded-lg border px-2.5 py-1.5 text-[13px] transition-colors",
+                    "rounded-lg border px-2.5 py-1.5 text-sm transition-colors",
                     followup === days
                       ? "border-accent bg-accent-soft text-accent-ink"
                       : "border-line text-muted hover:text-ink",
@@ -150,7 +150,7 @@ function PreferencesTab() {
 
       <Card className="p-4">
         <SectionTitle title="Couleur d'accentuation" className="mb-4" />
-        <p className="mb-3 text-[13px] text-muted">
+        <p className="mb-3 text-sm text-muted">
           Couleur principale de l&apos;interface.
         </p>
         <div className="flex flex-wrap gap-2">
@@ -160,7 +160,7 @@ function PreferencesTab() {
               type="button"
               onClick={() => void updateProfile({ accent: key })}
               className={cn(
-                "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-[13px] capitalize transition-colors",
+                "flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm capitalize transition-colors",
                 profile?.accent === key
                   ? "border-line-strong bg-surface-2 text-ink"
                   : "border-line text-muted hover:text-ink",
@@ -214,8 +214,8 @@ function WorkspacesTab() {
                 aria-hidden
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[14px] font-medium text-ink">{workspace.name}</p>
-                <p className="text-[12px] text-muted">
+                <p className="truncate text-base font-medium text-ink">{workspace.name}</p>
+                <p className="text-sm text-muted">
                   {count} track{count > 1 ? "s" : ""}
                   {workspace.archived ? " · archivé" : ""}
                 </p>
@@ -443,13 +443,13 @@ function StagesTab() {
                 aria-hidden
               />
               <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-2 truncate text-[14px] font-medium text-ink">
+                <p className="flex items-center gap-2 truncate text-base font-medium text-ink">
                   {stage.name}
                   {stage.is_released ? <Badge tone="ok">Sortie</Badge> : null}
                   {stage.is_sendable ? <Badge tone="info">Envoyable</Badge> : null}
                   {stage.archived ? <Badge>Archivée</Badge> : null}
                 </p>
-                <p className="text-[12px] text-muted">
+                <p className="text-sm text-muted">
                   {count} track{count > 1 ? "s" : ""}
                 </p>
               </div>
@@ -702,7 +702,7 @@ function TemplatesTab() {
     <div className="grid gap-4 lg:grid-cols-[260px_1fr]">
       <Card className="h-fit p-3">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="text-[13px] font-semibold uppercase tracking-wide text-muted">Modèles</h2>
+          <h2 className="text-label font-semibold uppercase tracking-wide text-muted">Modèles</h2>
           <IconButton label="Nouveau modèle" onClick={() => setCreating(true)}>
             <IconPlus size={16} />
           </IconButton>
@@ -714,14 +714,14 @@ function TemplatesTab() {
                 type="button"
                 onClick={() => setSelected(item.id)}
                 className={cn(
-                  "w-full truncate rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors",
+                  "w-full truncate rounded-lg px-2.5 py-2 text-left text-sm transition-colors",
                   template?.id === item.id
                     ? "bg-surface-2 text-ink"
                     : "text-muted hover:text-ink-soft",
                 )}
               >
                 {item.name}
-                <span className="ml-1.5 text-[11px] text-faint">
+                <span className="ml-1.5 text-label text-muted">
                   {templateItems.filter((i) => i.template_id === item.id).length}
                 </span>
               </button>
@@ -729,7 +729,7 @@ function TemplatesTab() {
           ))}
         </ul>
         {templates.length === 0 ? (
-          <p className="px-2 py-4 text-[12px] text-faint">Aucun modèle.</p>
+          <p className="px-2 py-4 text-sm text-muted">Aucun modèle.</p>
         ) : null}
         <Button
           variant="ghost"
@@ -745,9 +745,9 @@ function TemplatesTab() {
         <Card className="p-4">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h2 className="text-[15px] font-semibold">{template.name}</h2>
+              <h2 className="text-base font-semibold">{template.name}</h2>
               {template.description ? (
-                <p className="mt-0.5 text-[13px] text-muted">{template.description}</p>
+                <p className="mt-0.5 text-sm text-muted">{template.description}</p>
               ) : null}
             </div>
             <div className="flex items-center gap-2">
@@ -776,8 +776,8 @@ function TemplatesTab() {
             {items.map((item) => (
               <li key={item.id} className="group flex items-center gap-3 py-2">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] text-ink-soft">{item.title}</p>
-                  <p className="text-[11px] text-faint">
+                  <p className="truncate text-sm text-ink-soft">{item.title}</p>
+                  <p className="text-label text-muted">
                     {PHASE_LABEL[item.phase] ?? item.phase} · poids {item.weight}
                     {item.estimated_minutes ? ` · ${item.estimated_minutes} min` : ""}
                   </p>
@@ -837,7 +837,7 @@ function TemplatesTab() {
           </div>
         </Card>
       ) : (
-        <Card className="p-8 text-center text-[13px] text-faint">
+        <Card className="p-8 text-center text-sm text-muted">
           Sélectionnez ou créez un modèle.
         </Card>
       )}
@@ -927,7 +927,7 @@ function AccountTab() {
     <div className="grid gap-4 lg:grid-cols-2">
       <Card className="p-4">
         <SectionTitle title="Compte" className="mb-3" />
-        <dl className="space-y-2 text-[13px]">
+        <dl className="space-y-2 text-sm">
           <div className="flex justify-between gap-3">
             <dt className="text-muted">Adresse e-mail</dt>
             <dd className="truncate text-ink-soft">{userEmail ?? "—"}</dd>
@@ -950,7 +950,7 @@ function AccountTab() {
 
       <Card className="p-4">
         <SectionTitle title="Mot de passe" className="mb-3" />
-        <p className="mb-4 text-[13px] leading-relaxed text-muted">
+        <p className="mb-4 text-sm leading-relaxed text-muted">
           Facultatif. Une fois défini, vous pourrez vous connecter directement avec votre
           adresse et ce mot de passe, sans attendre d&apos;e-mail ni ouvrir de lien — plus
           pratique sur iPhone.
@@ -985,7 +985,7 @@ function AccountTab() {
 
       <Card className="p-4">
         <SectionTitle title="Vos données" className="mb-3" />
-        <dl className="space-y-2 text-[13px]">
+        <dl className="space-y-2 text-sm">
           {[
             ["Tracks", tracks.length],
             ["Labels", labels.length],
@@ -997,7 +997,7 @@ function AccountTab() {
             </div>
           ))}
         </dl>
-        <p className="mt-4 text-[12px] leading-relaxed text-faint">
+        <p className="mt-4 text-sm leading-relaxed text-muted">
           Toutes vos données sont stockées dans votre propre projet Supabase et isolées par votre
           identifiant utilisateur.
         </p>
@@ -1005,7 +1005,7 @@ function AccountTab() {
 
       <Card className="p-4 lg:col-span-2">
         <SectionTitle title={`Installer ${APP_NAME}`} className="mb-3" />
-        <div className="space-y-2 text-[13px] leading-relaxed text-muted">
+        <div className="space-y-2 text-sm leading-relaxed text-muted">
           <p>
             <span className="text-ink-soft">Sur iPhone :</span> ouvrez l&apos;application dans
             Safari, touchez le bouton Partager, puis « Sur l&apos;écran d&apos;accueil ».

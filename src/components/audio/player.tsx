@@ -239,15 +239,15 @@ export function AudioPlayer({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-[13px] font-medium text-ink">
+            <p className="truncate text-sm font-medium text-ink">
               {current?.name ?? "—"}
               {current ? (
-                <span className="ml-1.5 text-[11px] font-normal text-faint">
+                <span className="ml-1.5 text-label font-normal text-muted">
                   {AUDIO_KIND_LABEL[current.kind]}
                 </span>
               ) : null}
             </p>
-            <span className="tabular shrink-0 text-[11px] text-muted">
+            <span className="tabular shrink-0 text-label text-muted">
               {formatClock(currentTime)} / {formatClock(duration || current?.duration_seconds || 0)}
             </span>
           </div>
@@ -271,7 +271,7 @@ export function AudioPlayer({
       {!compact ? (
         <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-line pt-3">
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <IconVolume size={16} className="shrink-0 text-faint" />
+            <IconVolume size={16} className="shrink-0 text-muted" />
             <input
               type="range"
               min={0}
@@ -291,8 +291,8 @@ export function AudioPlayer({
                 type="button"
                 onClick={() => setRate(value)}
                 className={cn(
-                  "rounded-md px-1.5 py-0.5 text-[11px] transition-colors",
-                  rate === value ? "bg-surface-3 text-ink" : "text-faint hover:text-ink-soft",
+                  "rounded-md px-1.5 py-0.5 text-label transition-colors",
+                  rate === value ? "bg-surface-3 text-ink" : "text-muted hover:text-ink-soft",
                 )}
               >
                 {value}×
@@ -317,7 +317,7 @@ export function AudioPlayer({
         </div>
       ) : null}
 
-      {error ? <p className="mt-2 text-[12px] text-danger">{error}</p> : null}
+      {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
     </div>
   );
 }

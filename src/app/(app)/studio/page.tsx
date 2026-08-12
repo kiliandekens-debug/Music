@@ -3,13 +3,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { accentHex } from "@/lib/constants";
 import { useDebounced } from "@/lib/hooks";
 import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import { useUi } from "@/lib/store/ui";
 import { aliasLabel } from "@/lib/domain/board";
 import { Button, Modal, SearchInput, cn } from "@/components/ui";
-import { IconArrowRight, IconPlus } from "@/components/ui/icons";
+import { IconPlus } from "@/components/ui/icons";
 import { Board } from "@/components/tracks/board";
 import { TrackForm } from "@/components/tracks/track-form";
 
@@ -34,95 +35,87 @@ export default function StudioPage() {
   }, [visibleTracks, query]);
 
   /*
-   * « À faire maintenant » ne montre que du travail de production : les
-   * relances vivent sur la page Labels et les actions de communication sur la
-   * page Promotion. Sans action réelle, la zone disparaît entièrement.
+   * Une seule urgence est rappelée en haut, et seulement si elle est vraiment
+   * urgente : le reste vit déjà sur les cartes, où se trouve la track concernée.
+   * Un bandeau de rappels qui répète le tableau repousse le tableau hors de
+   * l'écran sans rien apprendre.
    */
-  const todo = useMemo(
-    () => suggestions.filter((s) => !s.promoTaskId && !s.submissionId).slice(0, 3),
+  const urgent = useMemo(
+    () =>
+      suggestions.find(
+        (s) => !s.promoTaskId && !s.submissionId && (s.tone === "danger" || s.tone === "warn"),
+      ),
     [suggestions],
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 py-6 lg:px-8 lg:py-8">
-      <header className="mb-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-[26px] font-semibold tracking-tight">Mes tracks</h1>
-          <Button variant="primary" onClick={() => setCreating(true)}>
-            <IconPlus size={16} />
-            Nouvelle track
-          </Button>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <div className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-            <AliasChip
-              label="Toutes"
-              active={workspaceId === "tous"}
-              onClick={() => setWorkspaceId("tous")}
-            />
-            {aliases.map((workspace) => (
-              <AliasChip
-                key={workspace.id}
-                label={aliasLabel(workspace.name) ?? workspace.name}
-                active={workspaceId === workspace.id}
-                onClick={() => setWorkspaceId(workspace.id)}
-              />
-            ))}
-          </div>
+    <div className="mx-auto w-full max-w-[1560px] px-5 py-4 lg:px-10 lg:py-9">
+      <header className="mb-4 lg:mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">Mes tracks</h1>
           <SearchInput
             value={search}
             onChange={setSearch}
             placeholder="Rechercher"
-            className="ml-auto w-full sm:w-52"
+            className="ml-auto hidden w-56 sm:block"
           />
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={() => setCreating(true)}
+            className="ml-auto shrink-0 sm:ml-0"
+          >
+            <IconPlus size={17} />
+            <span className="sm:hidden">Nouvelle</span>
+            <span className="hidden sm:inline">Nouvelle track</span>
+          </Button>
+        </div>
+
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Rechercher une track"
+          className="mt-3 sm:hidden"
+        />
+
+        <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 lg:mx-0 lg:mt-4 lg:px-0">
+          <AliasChip
+            label="Toutes"
+            active={workspaceId === "tous"}
+            onClick={() => setWorkspaceId("tous")}
+          />
+          {aliases.map((workspace) => (
+            <AliasChip
+              key={workspace.id}
+              label={aliasLabel(workspace.name) ?? workspace.name}
+              color={accentHex(workspace.color)}
+              active={workspaceId === workspace.id}
+              onClick={() => setWorkspaceId(workspace.id)}
+            />
+          ))}
         </div>
       </header>
 
-      {todo.length > 0 ? (
-        <section className="mb-6">
-          <h2 className="mb-2 text-[13px] font-semibold text-muted">À faire maintenant</h2>
-          <ul className="space-y-1.5">
-            {todo.map((suggestion) => (
-              <li key={suggestion.id}>
-                <Link
-                  href={suggestion.href}
-                  className="card card-hover flex items-center gap-3 px-3.5 py-3"
-                >
-                  <span
-                    className={cn(
-                      "h-1.5 w-1.5 shrink-0 rounded-full",
-                      suggestion.tone === "danger"
-                        ? "bg-danger"
-                        : suggestion.tone === "warn"
-                          ? "bg-warn"
-                          : "bg-accent",
-                    )}
-                    aria-hidden
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[14px] font-medium text-ink">
-                      {suggestion.title}
-                    </span>
-                    <span className="block truncate text-[12px] text-faint">
-                      {suggestion.reason}
-                    </span>
-                  </span>
-                  <IconArrowRight size={16} className="shrink-0 text-faint" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {urgent ? (
+        <Link
+          href={urgent.href}
+          className="mb-4 flex items-start gap-3 rounded-xl border border-danger/25 bg-danger/[0.07] px-4 py-2.5 text-sm leading-snug transition-colors duration-100 hover:bg-danger/[0.12] lg:mb-5 lg:items-center"
+        >
+          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-danger lg:mt-0" aria-hidden />
+          <span className="line-clamp-2-safe min-w-0 flex-1">
+            <span className="font-medium text-ink">{urgent.title}</span>
+            <span className="text-muted"> · {urgent.reason}</span>
+          </span>
+        </Link>
       ) : null}
 
       {tracks.length === 0 ? (
-        <p className="flex flex-wrap items-center gap-3 py-3 text-[14px] text-muted">
+        <p className="flex flex-wrap items-center gap-3 py-4 text-base text-muted">
           {query.trim()
             ? "Aucune track ne correspond à cette recherche."
             : "Aucune track pour le moment."}
           {query.trim() ? null : (
-            <Button variant="primary" size="sm" onClick={() => setCreating(true)}>
+            <Button variant="primary" onClick={() => setCreating(true)}>
               Crée ta première track
             </Button>
           )}
@@ -148,10 +141,12 @@ function AliasChip({
   label,
   active,
   onClick,
+  color,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
+  color?: string;
 }) {
   return (
     <button
@@ -159,12 +154,19 @@ function AliasChip({
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        "shrink-0 rounded-full border px-3.5 py-1.5 text-[13px] font-medium transition-colors duration-100",
+        "flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-100",
         active
-          ? "border-accent/40 bg-accent-soft text-accent-ink"
-          : "border-line text-muted hover:border-line-strong hover:text-ink",
+          ? "border-line-strong bg-surface-3 text-ink"
+          : "border-line bg-surface text-muted hover:text-ink-soft",
       )}
     >
+      {color ? (
+        <span
+          className="h-2 w-2 rounded-full"
+          style={{ backgroundColor: color, opacity: active ? 1 : 0.65 }}
+          aria-hidden
+        />
+      ) : null}
       {label}
     </button>
   );

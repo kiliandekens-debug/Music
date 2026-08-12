@@ -292,13 +292,16 @@ await page.waitForTimeout(2000);
 const headers = (await page.locator("table thead th").allInnerTexts()).map((t) =>
   t.trim().toLocaleLowerCase("fr"),
 );
-for (const expected of ["Label", "Contact", "Styles", "Dernière track", "Envoi", "Statut", "Répondu"]) {
+for (const expected of ["Label", "Dernière track", "Envoi", "Suivi", "Répondu"]) {
   if (!headers.includes(expected.toLocaleLowerCase("fr"))) {
     throw new Error(`Colonne manquante dans le carnet de labels : ${expected}`);
   }
 }
 if (!(await page.getByText("Anjunadeep").first().isVisible())) {
   throw new Error("Les labels créés à l'onboarding n'apparaissent pas");
+}
+if ((await page.locator("table thead th").count()) > 6) {
+  throw new Error("Le carnet de labels compte encore trop de colonnes");
 }
 await shot("08-labels");
 log(`✓ Page Labels : carnet en tableau (${headers.filter(Boolean).join(", ")})`);

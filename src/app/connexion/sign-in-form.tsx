@@ -178,7 +178,7 @@ export function SignInForm() {
       ) : step === "email" ? (
         <form onSubmit={sendLink} className="card space-y-4 p-5">
           {linkErrorMessage ? (
-            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2.5 text-[13px] leading-relaxed text-warn">
+            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2.5 text-sm leading-relaxed text-warn">
               {linkErrorMessage}
             </p>
           ) : null}
@@ -195,19 +195,19 @@ export function SignInForm() {
             />
           </Field>
           {error ? (
-            <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-[13px] leading-relaxed text-danger">
+            <p className="rounded-lg border border-danger/30 bg-danger/10 px-3 py-2.5 text-sm leading-relaxed text-danger">
               {error}
             </p>
           ) : null}
           <Button type="submit" variant="primary" size="lg" className="w-full" loading={busy}>
             Recevoir le lien de connexion
           </Button>
-          <p className="text-center text-[12px] leading-relaxed text-faint">
+          <p className="text-center text-sm leading-relaxed text-muted">
             Un lien de connexion vous est envoyé par e-mail. Ouvrez-le sur cet appareil.
           </p>
           <button
             type="button"
-            className="w-full border-t border-line pt-3 text-center text-[13px] text-muted hover:text-ink"
+            className="w-full border-t border-line pt-3 text-center text-sm text-muted hover:text-ink"
             onClick={() => {
               setStep("motdepasse");
               setError(null);
@@ -219,7 +219,7 @@ export function SignInForm() {
       ) : step === "motdepasse" ? (
         <form onSubmit={signInWithPassword} className="card space-y-4 p-5">
           {linkErrorMessage ? (
-            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2.5 text-[13px] leading-relaxed text-warn">
+            <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2.5 text-sm leading-relaxed text-warn">
               {linkErrorMessage}
             </p>
           ) : null}
@@ -245,7 +245,7 @@ export function SignInForm() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </Field>
-          {error ? <p className="text-[13px] leading-relaxed text-danger">{error}</p> : null}
+          {error ? <p className="text-sm leading-relaxed text-danger">{error}</p> : null}
           <Button
             type="submit"
             variant="primary"
@@ -258,7 +258,7 @@ export function SignInForm() {
           </Button>
           <button
             type="button"
-            className="w-full border-t border-line pt-3 text-center text-[13px] text-muted hover:text-ink"
+            className="w-full border-t border-line pt-3 text-center text-sm text-muted hover:text-ink"
             onClick={() => {
               setStep("email");
               setError(null);
@@ -270,7 +270,7 @@ export function SignInForm() {
       ) : (
         <form onSubmit={verifyCode} className="card space-y-4 p-5">
           {sent ? (
-            <p className="rounded-lg border border-ok/25 bg-ok/10 px-3 py-2.5 text-[13px] text-ok">
+            <p className="rounded-lg border border-ok/25 bg-ok/10 px-3 py-2.5 text-sm text-ok">
               Lien envoyé à {email}. Ouvrez-le sur cet appareil, ou saisissez le code reçu.
             </p>
           ) : null}
@@ -288,7 +288,7 @@ export function SignInForm() {
               onChange={(e) => setCode(e.target.value)}
             />
           </Field>
-          {error ? <p className="text-[13px] text-danger">{error}</p> : null}
+          {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button
             type="submit"
             variant="primary"
@@ -301,7 +301,7 @@ export function SignInForm() {
           </Button>
           <button
             type="button"
-            className="w-full text-center text-[13px] text-muted hover:text-ink"
+            className="w-full text-center text-sm text-muted hover:text-ink"
             onClick={() => {
               setStep("email");
               setError(null);

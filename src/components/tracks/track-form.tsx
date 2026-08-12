@@ -169,7 +169,7 @@ export function TrackForm({
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Espace">
+        <Field label="Alias">
           <Select
             value={draft.workspace_id ?? ""}
             onChange={(e) => set("workspace_id", e.target.value || null)}

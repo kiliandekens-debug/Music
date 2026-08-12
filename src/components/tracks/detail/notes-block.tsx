@@ -11,7 +11,7 @@ export function NotesBlock({ track }: { track: Track }) {
   return (
     <div className="space-y-6">
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">Notes générales</h3>
+        <h3 className="mb-2 text-sm font-semibold text-muted">Notes générales</h3>
         <NotesField
           trackId={track.id}
           value={track.notes}
@@ -21,28 +21,28 @@ export function NotesBlock({ track }: { track: Track }) {
       </section>
 
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">Artwork</h3>
+        <h3 className="mb-2 text-sm font-semibold text-muted">Artwork</h3>
         <ArtworkCard track={track} />
       </section>
 
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">
+        <h3 className="mb-2 text-sm font-semibold text-muted">
           Références, liens et fichiers
         </h3>
         <ReferencesSection track={track} />
       </section>
 
       <section>
-        <h3 className="mb-2 text-[13px] font-semibold text-muted">Projet Ableton</h3>
+        <h3 className="mb-2 text-sm font-semibold text-muted">Projet Ableton</h3>
         {track.ableton_path ? (
           <div className="flex flex-wrap items-center gap-2">
-            <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 font-mono text-[12px] text-ink-soft">
+            <code className="min-w-0 flex-1 truncate rounded-lg border border-line bg-surface-2 px-2.5 py-1.5 font-mono text-sm text-ink-soft">
               {track.ableton_path}
             </code>
             <CopyButton value={track.ableton_path} label="Copier le chemin" />
           </div>
         ) : (
-          <p className="text-[13px] text-muted">
+          <p className="text-sm text-muted">
             Aucun chemin enregistré. Le navigateur ne peut pas ouvrir un fichier local : le chemin
             sert à le retrouver.
           </p>
