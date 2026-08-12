@@ -31,7 +31,7 @@ import { AudioPlayer, useAudioPlayer } from "@/components/audio/player";
 import { useToast } from "@/components/ui/toast";
 import type { AudioKind, AudioVersion, Track } from "@/lib/types";
 
-export function VersionsTab({ track }: { track: Track }) {
+export function VersionsSection({ track }: { track: Track }) {
   const { userId, audioVersions, insert, update, remove, log, touchTrack } = useData();
   const { select, currentId } = useAudioPlayer();
   const toast = useToast();
@@ -152,7 +152,7 @@ export function VersionsTab({ track }: { track: Track }) {
             e.target.value = "";
           }}
         />
-        <Button variant="primary" size="sm" onClick={() => fileInput.current?.click()}>
+        <Button variant="outline" size="sm" onClick={() => fileInput.current?.click()}>
           <IconUpload size={16} />
           Ajouter une version
         </Button>
@@ -160,11 +160,7 @@ export function VersionsTab({ track }: { track: Track }) {
       </div>
 
       {versions.length === 0 ? (
-        <EmptyState
-          icon={<IconMusic size={26} />}
-          title="Aucune version audio"
-          description="Ajoutez une démo, un mix ou un master pour écouter la track et poser des corrections horodatées."
-        />
+        <EmptyState title="Aucune version audio." />
       ) : (
         <div className="space-y-2">
           {versions.map((version) => (

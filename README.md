@@ -10,30 +10,41 @@ Application personnelle, en français, installable sur ordinateur et iPhone.
 
 ## Ce que fait l'application
 
-| Section         | Rôle                                                                             |
-| --------------- | -------------------------------------------------------------------------------- |
-| **Aujourd'hui** | La prochaine action recommandée, les retards, les relances, les sorties proches   |
-| **Studio**      | Le pipeline de production en Kanban, la fiche complète de chaque track            |
-| **Sessions**    | Le Mode Session : une track, trois tâches maximum, un chronomètre, un bilan       |
-| **Releases**    | Campagnes promotionnelles, contenus, contacts promo, résultats                    |
-| **Labels**      | Mini-CRM : fiches labels, envois, réponses, relances, historique                  |
-| **Calendrier**  | Vue mensuelle et agenda de tout ce qui est daté                                   |
-| **Analyses**    | Production, labels et promotion, calculés sur vos données réelles                 |
-| **Paramètres**  | Espaces, étapes du pipeline, modèles de checklists, préférences                   |
+Trois pages, pas une de plus.
+
+| Section        | Rôle                                                                            |
+| -------------- | ------------------------------------------------------------------------------- |
+| **Studio**     | Le tableau des tracks en quatre colonnes, et la fiche de chaque track            |
+| **Labels**     | Le carnet des labels : envois, délais, réponses, relances                        |
+| **Promotion**  | Les sorties datées et leur checklist chronologique                               |
+| *Paramètres*   | Alias, étapes, modèles de checklists, compte — derrière une icône discrète       |
+
+Le tableau du Studio tient sur un écran : **Idées**, **En cours**,
+**Finalisation**, **Terminées**. Production, arrangement, mixage et mastering
+ne sont pas des colonnes mais une sous-étape interne d'une track « En cours ».
+« Envoyée aux labels », « Signée » et « Sortie » ne sont pas des colonnes non
+plus : ce sont des statuts affichés sur la carte.
+
+La fiche d'une track tient en quatre blocs repliables : **Production**,
+**Envois aux labels**, **Promotion**, **Notes et fichiers**.
 
 Quelques partis pris :
 
 - **Deux progressions distinctes.** Une track peut être terminée musicalement à
-  100 % et n'être qu'à 35 % de promotion. Les deux ne se mélangent jamais.
+  100 % et n'être qu'à 35 % de promotion. Les deux ne se mélangent jamais. La
+  progression de promotion n'apparaît que si une sortie est réellement préparée.
+- **Aucun chiffre à zéro.** Un compteur vide n'apprend rien : il ne s'affiche
+  pas. Les états vides tiennent en une phrase et un bouton.
 - **Le moteur « Prochaine action » est un moteur de règles**, pas une IA. Chaque
-  suggestion affiche la règle qui l'a produite, et vous pouvez toujours épingler
-  une autre action à la place.
+  suggestion affiche la règle qui l'a produite.
+- **Les rappels vivent là où on agit** : les relances sur la page Labels, le
+  travail de production sur le Studio, la communication sur Promotion.
 - **Une réponse appartient à un envoi**, jamais à un label : le même label peut
   recevoir plusieurs tracks et répondre différemment à chacune.
 - **Une relance crée un rappel, jamais un e-mail automatique.** Le bouton
-  « Ouvrir dans mon application e-mail » prépare un message, vous l'envoyez.
-- **Les analyses ne montrent que de vraies données.** Aucun chiffre n'est
-  inventé ni estimé ; les résultats de sortie sont saisis à la main.
+  « Écrire à… » prépare un message, vous l'envoyez.
+- **Rien n'a été supprimé en base.** Les 22 tables restent en place ; cette
+  première version n'en expose qu'une partie dans l'interface.
 
 ---
 
@@ -115,7 +126,7 @@ npm run dev
 > variable `NEXT_PUBLIC_*`. Une clé secrète y contournerait la Row Level
 > Security ; l'application n'en a aucun besoin.
 
-À la première connexion, un onboarding court propose vos espaces
+À la première connexion, un onboarding court propose vos alias
 (Deepest Mind, ELVIK, Remixes, Idées à trier), les étapes du pipeline, le délai
 de relance par défaut, une première track et quelques labels.
 
@@ -184,34 +195,28 @@ elle était à jour.
 src/
 ├── app/
 │   ├── (app)/              Sections protégées par le middleware
-│   │   ├── aujourdhui/     Tableau de bord et prochaine action
-│   │   ├── studio/         Pipeline + fiche track (9 onglets)
-│   │   ├── sessions/       Historique et Mode Session
-│   │   ├── releases/       Campagnes, contenus, contacts, résultats
-│   │   ├── labels/         Mini-CRM et suivi des envois
-│   │   ├── calendrier/     Mois et agenda
-│   │   ├── analyses/       Production, labels, promotion
-│   │   ├── parametres/     Espaces, pipeline, modèles, compte
-│   │   └── plus/           Écran « Plus » de la navigation mobile
-│   ├── connexion/          Connexion par e-mail
+│   │   ├── studio/         Tableau des tracks + fiche en quatre blocs
+│   │   ├── labels/         Carnet des labels et suivi des envois
+│   │   ├── promotion/      Sorties datées et checklist chronologique
+│   │   └── parametres/     Alias, étapes, modèles, compte
+│   ├── connexion/          Connexion par e-mail ou mot de passe
 │   └── auth/callback/      Retour des liens de connexion
 ├── components/
 │   ├── ui/                 Primitives accessibles + icônes + toasts
-│   ├── layout/             Barre latérale, navigation mobile, ajout rapide
-│   ├── tracks/             Cartes, Kanban, formulaire, onglets de la fiche
+│   ├── layout/             Barre latérale, navigation mobile, onboarding
+│   ├── tracks/             Carte, tableau, formulaire, blocs de la fiche
 │   ├── labels/             Formulaires, liste d'envois, réponse, fiche label
-│   ├── promo/              Campagne, contenus, envois promo, résultats
-│   ├── sessions/           Démarrage d'une session
+│   ├── promo/              Checklist de sortie
 │   └── audio/              Lecteur partagé et corrections horodatées
 └── lib/
     ├── domain/             Règles métier pures, testées unitairement
+    │   ├── board.ts        Colonnes, sous-étapes, statut label, prochaine action
     │   ├── progress.ts     Progression pondérée, production et promotion
     │   ├── submissions.ts  Délais, relances, réponses, statistiques
-    │   ├── promo-plan.ts   Planning à rebours J−28 → J+14 et assets
+    │   ├── promo-plan.ts   Checklist de sortie calculée à rebours
     │   ├── next-action.ts  Moteur de règles « Prochaine action »
-    │   ├── templates.ts    Modèles de checklists fournis
-    │   └── calendar.ts     Agrégation des évènements datés
-    ├── store/              Données, filtres, session en cours, sélecteurs
+    │   └── templates.ts    Modèles de checklists fournis
+    ├── store/              Données, filtre d'alias, sélecteurs
     ├── supabase/           Clients navigateur et serveur
     ├── types.ts            Types des 22 tables
     └── constants.ts        Vocabulaire de l'interface (français)
@@ -220,8 +225,8 @@ src/
 ### Couche de données
 
 Le jeu de données d'un producteur reste petit (quelques milliers de lignes).
-Il est chargé une fois en mémoire au démarrage, ce qui rend les filtres, le
-Kanban et les analyses instantanés. Chaque mutation est écrite dans Supabase
+Il est chargé une fois en mémoire au démarrage, ce qui rend les filtres et le
+tableau instantanés. Chaque mutation est écrite dans Supabase
 avec **mise à jour optimiste et retour arrière** en cas d'échec : l'interface
 répond immédiatement, et une erreur réseau ne laisse jamais un état faux à
 l'écran.
@@ -290,8 +295,8 @@ npm run setup      # installation guidée (voir plus haut)
 Les règles métier sont couvertes par des tests unitaires (`npm test`) :
 progression pondérée, exclusion des tâches ignorées, indépendance
 production / promotion, libellés de relance, bascule automatique en « Refusé »,
-détection des envois en double, planning à rebours, et ordre des règles du
-moteur « Prochaine action ».
+détection des envois en double, checklist de sortie calculée à rebours, et ordre
+des règles du moteur « Prochaine action ».
 
 Pour vérifier l'application entière sans projet Supabase — y compris la Row
 Level Security, le téléversement audio et le parcours complet dans un
@@ -304,8 +309,11 @@ navigateur — voir [`tools/verification/README.md`](tools/verification/README.m
 - Pas d'abonnement, de paiement, d'équipe ni d'organisation : usage personnel.
   L'architecture reste multi-utilisateur (`user_id` partout) pour permettre une
   évolution ultérieure.
-- Pas de connexion aux plateformes de streaming : les résultats de sortie sont
-  saisis manuellement. Aucun chiffre n'est simulé.
+- Pas de connexion aux plateformes de streaming : aucun chiffre n'est simulé.
+- L'interface expose trois pages seulement. Les tables laissées de côté
+  (sessions de travail, contenus planifiés, contacts promo, relevés de
+  résultats) restent en base, prêtes pour une version ultérieure, mais aucun
+  écran ne les affiche : mieux vaut trois pages utilisées que huit ignorées.
 - Pas d'envoi d'e-mails depuis l'application : elle prépare le message et
   crée les rappels, l'envoi reste dans votre client e-mail.
 - Le chemin d'un projet Ableton est stocké comme texte avec un bouton de copie.

@@ -7,7 +7,10 @@
  * des informations périmées comme si elles étaient à jour.
  */
 
-const VERSION = "atelier-v1";
+// La version change dès que la coquille change : l'ancien cache est alors
+// effacé à l'activation, ce qui évite de servir hors connexion des écrans qui
+// n'existent plus.
+const VERSION = "atelier-v2";
 const SHELL_CACHE = `${VERSION}-shell`;
 const ASSET_CACHE = `${VERSION}-assets`;
 
@@ -63,7 +66,7 @@ self.addEventListener("fetch", (event) => {
           return response;
         })
         .catch(() =>
-          caches.match(request).then((cached) => cached ?? caches.match("/aujourdhui")),
+          caches.match(request).then((cached) => cached ?? caches.match("/studio")),
         ),
     );
     return;

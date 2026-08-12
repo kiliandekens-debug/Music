@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getMediaUrl, removeMedia, uploadMedia } from "@/lib/storage";
 import { useData } from "@/lib/store/data";
-import { Button, Card, Field, Input, SectionTitle } from "@/components/ui";
+import { Button, Field, Input } from "@/components/ui";
 import { IconUpload } from "@/components/ui/icons";
 import { useToast } from "@/components/ui/toast";
 import type { Track } from "@/lib/types";
@@ -86,10 +86,7 @@ export function ArtworkCard({ track }: { track: Track }) {
   }
 
   return (
-    <Card className="p-4">
-      <SectionTitle title="Artwork provisoire" className="mb-3" />
-
-      <div className="flex gap-4">
+    <div className="flex gap-4">
         <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-surface-2">
           {preview ? (
             // Image distante ou signée : `img` natif, pas d'optimisation Next.
@@ -150,8 +147,7 @@ export function ArtworkCard({ track }: { track: Track }) {
               </Button>
             </div>
           </Field>
-        </div>
       </div>
-    </Card>
+    </div>
   );
 }

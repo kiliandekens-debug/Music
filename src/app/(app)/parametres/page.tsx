@@ -48,7 +48,7 @@ export default function SettingsPage() {
         className="mb-4"
         tabs={[
           { id: "preferences", label: "Préférences" },
-          { id: "espaces", label: "Espaces" },
+          { id: "espaces", label: "Alias" },
           { id: "pipeline", label: "Pipeline" },
           { id: "modeles", label: "Modèles de checklists" },
           { id: "compte", label: "Compte" },
@@ -130,7 +130,7 @@ function PreferencesTab() {
 
           <Field
             label="Seuil d'inactivité d'une track (jours)"
-            hint="Au-delà, une track est signalée comme inactive sur la page Aujourd'hui."
+            hint="Au-delà, une track prioritaire remonte dans « À faire maintenant »."
           >
             <Input
               type="number"
@@ -151,7 +151,7 @@ function PreferencesTab() {
       <Card className="p-4">
         <SectionTitle title="Couleur d'accentuation" className="mb-4" />
         <p className="mb-3 text-[13px] text-muted">
-          Couleur principale de l&apos;interface. Chaque espace conserve sa propre couleur.
+          Couleur principale de l&apos;interface.
         </p>
         <div className="flex flex-wrap gap-2">
           {ACCENT_KEYS.map((key) => (
@@ -180,7 +180,7 @@ function PreferencesTab() {
   );
 }
 
-// --- Espaces -----------------------------------------------------------------
+// --- Alias -----------------------------------------------------------------
 
 function WorkspacesTab() {
   const { workspaces, tracks, insert, update, remove } = useData();
@@ -196,10 +196,10 @@ function WorkspacesTab() {
   return (
     <>
       <div className="mb-3 flex items-center justify-between">
-        <SectionTitle title="Espaces musicaux" count={sorted.length} />
+        <SectionTitle title="Alias" count={sorted.length} />
         <Button variant="primary" size="sm" onClick={() => setCreating(true)}>
           <IconPlus size={16} />
-          Nouvel espace
+          Nouvel alias
         </Button>
       </div>
 
@@ -288,10 +288,10 @@ function WorkspacesTab() {
       <ConfirmDialog
         open={toDelete !== null}
         onClose={() => setToDelete(null)}
-        title="Supprimer cet espace ?"
+        title="Supprimer cet alias ?"
         destructive
         confirmLabel="Supprimer"
-        message="Les tracks de cet espace ne sont pas supprimées : elles se retrouvent simplement sans espace. Préférez l'archivage pour garder l'historique."
+        message="Les tracks de cet alias ne sont pas supprimées : elles se retrouvent simplement sans alias. Préférez l'archivage pour garder l'historique."
         onConfirm={() => {
           if (toDelete) void remove("workspaces", toDelete.id);
         }}
@@ -328,7 +328,7 @@ function WorkspaceModal({
     <Modal
       open={open}
       onClose={onClose}
-      title={workspace ? "Modifier l'espace" : "Nouvel espace"}
+      title={workspace ? "Modifier l'alias" : "Nouvel alias"}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
@@ -880,7 +880,7 @@ function TemplatesTab() {
 function AccountTab() {
   const router = useRouter();
   const toast = useToast();
-  const { userEmail, profile, tracks, labels, submissions, sessions } = useData();
+  const { userEmail, profile, tracks, labels, submissions } = useData();
   const [signingOut, setSigningOut] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -990,7 +990,6 @@ function AccountTab() {
             ["Tracks", tracks.length],
             ["Labels", labels.length],
             ["Envois", submissions.length],
-            ["Sessions", sessions.length],
           ].map(([label, value]) => (
             <div key={String(label)} className="flex justify-between gap-3">
               <dt className="text-muted">{label}</dt>

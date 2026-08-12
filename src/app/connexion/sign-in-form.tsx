@@ -12,7 +12,7 @@ type Step = "email" | "code" | "motdepasse";
 export function SignInForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const nextPath = params.get("suivant") ?? "/aujourdhui";
+  const nextPath = params.get("suivant") ?? "/studio";
 
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");

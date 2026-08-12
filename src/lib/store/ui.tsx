@@ -1,37 +1,22 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { useLocalState } from "@/lib/hooks";
 import { accentHex } from "@/lib/constants";
 import { useData } from "./data";
 import type { Track } from "@/lib/types";
 
-export type QuickAddKind =
-  | "track"
-  | "idee"
-  | "tache"
-  | "session"
-  | "label"
-  | "envoi"
-  | "contact"
-  | "contenu"
-  | "resultat";
-
 interface UiContextValue {
-  /** Espace sélectionné, ou "tous". Filtre l'ensemble des données. */
+  /**
+   * Alias sélectionné, ou "tous". C'est le seul filtre global : il est piloté
+   * depuis l'en-tête du Studio et s'applique partout pour rester cohérent.
+   */
   workspaceId: string;
   setWorkspaceId: (id: string) => void;
-  /** Filtre une liste de tracks selon l'espace sélectionné. */
+  /** Filtre une liste de tracks selon l'alias sélectionné. */
   filterTracks: <T extends { workspace_id: string | null }>(items: T[]) => T[];
-  /** Vrai si la track appartient à l'espace sélectionné. */
+  /** Vrai si la track appartient à l'alias sélectionné. */
   inWorkspace: (track: Pick<Track, "workspace_id">) => boolean;
-  /**
-   * « choix » affiche la grille de l'ajout rapide ; un type précis ouvre
-   * directement le formulaire correspondant.
-   */
-  quickAdd: QuickAddKind | "choix" | null;
-  openQuickAdd: (kind?: QuickAddKind) => void;
-  closeQuickAdd: () => void;
 }
 
 const UiContext = createContext<UiContextValue | null>(null);
@@ -39,7 +24,6 @@ const UiContext = createContext<UiContextValue | null>(null);
 export function UiProvider({ children }: { children: React.ReactNode }) {
   const { profile, workspaces } = useData();
   const [workspaceId, setWorkspaceId] = useLocalState<string>("atelier.workspace", "tous");
-  const [quickAdd, setQuickAdd] = useState<QuickAddKind | "choix" | null>(null);
 
   // Couleur d'accentuation globale, pilotée par le profil.
   useEffect(() => {
@@ -72,12 +56,8 @@ export function UiProvider({ children }: { children: React.ReactNode }) {
       setWorkspaceId,
       filterTracks,
       inWorkspace,
-      quickAdd,
-      // Sans type explicite, on présente la grille de choix.
-      openQuickAdd: (kind) => setQuickAdd(kind ?? "choix"),
-      closeQuickAdd: () => setQuickAdd(null),
     }),
-    [workspaceId, setWorkspaceId, filterTracks, inWorkspace, quickAdd],
+    [workspaceId, setWorkspaceId, filterTracks, inWorkspace],
   );
 
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>;

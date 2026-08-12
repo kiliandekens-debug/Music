@@ -1,130 +1,37 @@
 /**
- * Planning promotionnel à rebours depuis la date de sortie.
- * Les tâches générées sont ensuite librement modifiables, supprimables et
- * réorganisables : ce fichier ne sert qu'à la génération initiale.
+ * Checklist de sortie, calculée à rebours depuis la date de sortie.
+ *
+ * Huit étapes, dans l'ordre où on les vit : de la préparation des fichiers au
+ * suivi qui suit la sortie. Les échéances J−28, J−14 ou J−7 sont dérivées de la
+ * date de sortie, mais chaque tâche reste ensuite librement modifiable,
+ * supprimable et réordonnable — ce fichier ne sert qu'à la génération initiale.
  */
 
 import { addDays, format } from "date-fns";
 import { toDate } from "@/lib/format";
 
-export interface PlanTemplateTask {
+export interface PlanStep {
   title: string;
+  /** Décalage en jours par rapport à la sortie. Négatif = avant. */
   offset_days: number;
-  group_key: string;
-  weight?: number;
 }
 
-interface PlanGroup {
-  key: string;
-  offset: number;
-  tasks: string[];
+export const SIMPLE_PLAN: PlanStep[] = [
+  { title: "Artwork prêt", offset_days: -28 },
+  { title: "Master final prêt", offset_days: -28 },
+  { title: "Smartlink disponible", offset_days: -21 },
+  { title: "Teaser préparé", offset_days: -14 },
+  { title: "Annonce publiée", offset_days: -7 },
+  { title: "Promotion envoyée", offset_days: -7 },
+  { title: "Publication du jour de sortie", offset_days: 0 },
+  { title: "Suivi après la sortie", offset_days: 7 },
+];
+
+/** Étiquette lisible d'une échéance : « J−28 », « Jour J », « J+7 ». */
+export function offsetLabel(offsetDays: number): string {
+  if (offsetDays === 0) return "Jour J";
+  return offsetDays < 0 ? `J−${Math.abs(offsetDays)}` : `J+${offsetDays}`;
 }
-
-const PLAN: PlanGroup[] = [
-  {
-    key: "J-28",
-    offset: -28,
-    tasks: [
-      "Valider l'artwork",
-      "Préparer le master final",
-      "Créer le plan de communication",
-      "Préparer la biographie et le texte de présentation",
-    ],
-  },
-  {
-    key: "J-21",
-    offset: -21,
-    tasks: [
-      "Préparer le premier teaser",
-      "Préparer les vidéos courtes",
-      "Créer ou vérifier le smartlink",
-      "Préparer la campagne de pré-save",
-    ],
-  },
-  {
-    key: "J-14",
-    offset: -14,
-    tasks: [
-      "Publier le premier teaser",
-      "Commencer les envois promotionnels",
-      "Contacter les DJs, radios, playlists et médias",
-      "Préparer le contenu de la semaine de sortie",
-    ],
-  },
-  {
-    key: "J-7",
-    offset: -7,
-    tasks: [
-      "Publier un nouvel extrait",
-      "Vérifier tous les liens",
-      "Effectuer les premières relances",
-      "Préparer la publication du jour de sortie",
-    ],
-  },
-  {
-    key: "Jour J",
-    offset: 0,
-    tasks: [
-      "Publier l'annonce principale",
-      "Mettre à jour les liens",
-      "Partager les stories",
-      "Vérifier la disponibilité sur les plateformes",
-      "Contacter les personnes ayant soutenu la sortie",
-    ],
-  },
-  {
-    key: "J+3",
-    offset: 3,
-    tasks: [
-      "Partager les premiers retours",
-      "Publier un contenu supplémentaire",
-      "Enregistrer les premiers résultats",
-    ],
-  },
-  {
-    key: "J+7",
-    offset: 7,
-    tasks: [
-      "Effectuer une nouvelle vague de communication",
-      "Partager les soutiens DJ ou playlists",
-      "Analyser les premiers résultats",
-    ],
-  },
-  {
-    key: "J+14",
-    offset: 14,
-    tasks: [
-      "Effectuer un bilan intermédiaire",
-      "Ajouter les résultats",
-      "Terminer ou prolonger la campagne",
-    ],
-  },
-];
-
-/** Checklist des assets promotionnels, indépendante du calendrier. */
-export const PROMO_ASSETS: string[] = [
-  "Master final",
-  "Radio edit",
-  "Artwork",
-  "Cover carrée",
-  "Story verticale",
-  "Reel ou vidéo courte",
-  "Teaser audio",
-  "Press kit",
-  "Biographie",
-  "Texte de présentation",
-  "Photos",
-  "Smartlink",
-  "Lien de pré-save",
-  "Lien privé",
-  "Métadonnées",
-  "ISRC",
-  "UPC",
-  "Crédits",
-  "Date de sortie",
-];
-
-export const PLAN_GROUP_KEYS = [...PLAN.map((g) => g.key), "Assets"];
 
 export interface GeneratedPromoTask {
   title: string;
@@ -137,50 +44,21 @@ export interface GeneratedPromoTask {
 }
 
 /**
- * Génère le planning complet (calendrier + assets) pour une date de sortie.
- * Sans date de sortie, les tâches sont créées sans échéance : le producteur
- * peut préparer une campagne avant de connaître la date exacte.
+ * Génère la checklist pour une date de sortie.
+ * Sans date de sortie, les tâches sont créées sans échéance : on peut préparer
+ * une sortie avant d'en connaître la date exacte.
  */
-export function generatePromoPlan(
-  releaseDate: string | null,
-  options: { includeAssets?: boolean; includeSchedule?: boolean } = {},
-): GeneratedPromoTask[] {
-  const { includeAssets = true, includeSchedule = true } = options;
+export function generatePromoPlan(releaseDate: string | null): GeneratedPromoTask[] {
   const release = toDate(releaseDate);
-  const out: GeneratedPromoTask[] = [];
-  let position = 0;
-
-  if (includeSchedule) {
-    for (const group of PLAN) {
-      for (const title of group.tasks) {
-        out.push({
-          title,
-          group_key: group.key,
-          offset_days: group.offset,
-          due_date: release ? format(addDays(release, group.offset), "yyyy-MM-dd") : null,
-          is_asset: false,
-          position: position++,
-          weight: 1,
-        });
-      }
-    }
-  }
-
-  if (includeAssets) {
-    for (const title of PROMO_ASSETS) {
-      out.push({
-        title,
-        group_key: "Assets",
-        offset_days: -28,
-        due_date: release ? format(addDays(release, -28), "yyyy-MM-dd") : null,
-        is_asset: true,
-        position: position++,
-        weight: 1,
-      });
-    }
-  }
-
-  return out;
+  return SIMPLE_PLAN.map((step, index) => ({
+    title: step.title,
+    group_key: offsetLabel(step.offset_days),
+    offset_days: step.offset_days,
+    due_date: release ? format(addDays(release, step.offset_days), "yyyy-MM-dd") : null,
+    is_asset: false,
+    position: index,
+    weight: 1,
+  }));
 }
 
 /** Recalcule les échéances quand la date de sortie change. */
@@ -191,10 +69,4 @@ export function recomputeDueDate(
   const release = toDate(releaseDate);
   if (!release) return null;
   return format(addDays(release, offsetDays), "yyyy-MM-dd");
-}
-
-/** Ordre d'affichage des groupes du planning. */
-export function groupRank(key: string): number {
-  const index = PLAN_GROUP_KEYS.indexOf(key);
-  return index === -1 ? PLAN_GROUP_KEYS.length : index;
 }

@@ -27,7 +27,7 @@ import type { NoteCategory, Priority, TimestampNote, Track } from "@/lib/types";
  * Corrections horodatées : on écoute, on note à l'instant exact, et un clic
  * sur une correction ramène le lecteur à cet endroit.
  */
-export function CorrectionsTab({ track }: { track: Track }) {
+export function CorrectionsSection({ track }: { track: Track }) {
   const { timestampNotes, audioVersions, insert, update, remove, touchTrack } = useData();
   const { current, currentTime, goTo, versions } = useAudioPlayer();
   const toast = useToast();
@@ -110,11 +110,7 @@ export function CorrectionsTab({ track }: { track: Track }) {
 
   if (versions.length === 0) {
     return (
-      <EmptyState
-        icon={<IconNote size={26} />}
-        title="Aucune version audio à annoter"
-        description="Ajoutez d'abord une version audio dans l'onglet « Versions audio » pour poser des corrections horodatées."
-      />
+      <EmptyState title="Ajoutez d'abord une version audio pour poser des corrections horodatées." />
     );
   }
 
@@ -206,10 +202,7 @@ export function CorrectionsTab({ track }: { track: Track }) {
       </div>
 
       {grouped.length === 0 ? (
-        <EmptyState
-          title="Aucune correction"
-          description="Écoutez la track et notez ce qui doit être repris, à l'instant exact."
-        />
+        <EmptyState title="Aucune correction notée." />
       ) : (
         grouped.map(([versionId, list]) => (
           <Card key={versionId} className="overflow-hidden">

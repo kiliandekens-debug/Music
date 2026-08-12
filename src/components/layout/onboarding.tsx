@@ -67,7 +67,7 @@ export function Onboarding() {
 
   async function finish() {
     if (enabledWorkspaces.length === 0 || enabledStages.length === 0) {
-      toast.error("Gardez au moins un espace et une étape.");
+      toast.error("Gardez au moins un alias et une étape.");
       return;
     }
     setBusy(true);
@@ -149,14 +149,14 @@ export function Onboarding() {
 
       await updateProfile({ default_followup_days: followupDays, onboarding_done: true });
       toast.success("Tout est prêt.");
-      router.push("/aujourdhui");
+      router.push("/studio");
     } catch {
       // Le message d'erreur détaillé est déjà affiché par la couche de données.
       setBusy(false);
     }
   }
 
-  const steps = ["Espaces", "Pipeline", "Relances", "Première track"];
+  const steps = ["Alias", "Pipeline", "Relances", "Première track"];
 
   return (
     <div className="flex min-h-dvh flex-col items-center px-5 py-10">
@@ -190,10 +190,10 @@ export function Onboarding() {
           {step === 0 ? (
             <section className="space-y-4">
               <div>
-                <h2 className="text-[15px] font-semibold">Vos espaces musicaux</h2>
+                <h2 className="text-[15px] font-semibold">Vos alias</h2>
                 <p className="mt-1 text-[13px] text-muted">
-                  Un espace par alias ou par type de projet. Décochez ce dont vous n&apos;avez pas
-                  besoin.
+                  Un alias par identité ou par type de projet. Décochez ce dont vous n&apos;avez
+                  pas besoin.
                 </p>
               </div>
               <div className="space-y-2">
@@ -238,7 +238,7 @@ export function Onboarding() {
                   ])
                 }
               >
-                Ajouter un espace
+                Ajouter un alias
               </Button>
             </section>
           ) : null}
@@ -338,7 +338,7 @@ export function Onboarding() {
                 />
               </Field>
               {enabledWorkspaces.length > 0 ? (
-                <Field label="Espace">
+                <Field label="Alias">
                   <Select
                     value={trackWorkspace}
                     onChange={(e) => setTrackWorkspace(Number(e.target.value))}

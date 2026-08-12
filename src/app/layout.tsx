@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: `%s · ${APP_NAME}`,
   },
   description:
-    "Gestionnaire de production musicale : pipeline de tracks, sessions de studio, suivi des labels, promotion et résultats de sortie.",
+    "Gestionnaire de production musicale : avancement des tracks, envois aux labels et préparation des sorties.",
   applicationName: APP_NAME,
   manifest: "/manifest.webmanifest",
   appleWebApp: {

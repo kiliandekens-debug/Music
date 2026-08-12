@@ -30,7 +30,7 @@ import type { ReferenceKind, Track, TrackFile, TrackReference } from "@/lib/type
 
 const LINK_KINDS: ReferenceKind[] = ["spotify", "youtube", "soundcloud", "lien", "note"];
 
-export function ReferencesTab({ track }: { track: Track }) {
+export function ReferencesSection({ track }: { track: Track }) {
   const { userId, references, files, insert, remove, touchTrack } = useData();
   const toast = useToast();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -174,11 +174,7 @@ export function ReferencesTab({ track }: { track: Track }) {
       </div>
 
       {trackReferences.length === 0 ? (
-        <EmptyState
-          icon={<IconLink size={26} />}
-          title="Aucune référence"
-          description="Gardez ici les morceaux de référence, samples, presets et documents utiles à cette track."
-        />
+        <EmptyState title="Aucune référence ni fichier." />
       ) : (
         <div className="grid gap-2.5 sm:grid-cols-2">
           {trackReferences.map((reference) => (

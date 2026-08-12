@@ -151,6 +151,13 @@ test("un silence prolongé est signalé", () => {
   assert.equal(timing.needsFollowup, true);
 });
 
+test("une réponse arrivée le jour même n'affiche pas « 0 jour »", () => {
+  const timing = submissionTiming(
+    submission({ sent_at: isoDaysAgo(3), responded_at: isoDaysAgo(3), responded: true }),
+  );
+  assert.equal(timing.label, "Réponse reçue le jour même");
+});
+
 test("une réponse négative bascule le statut en refusé", () => {
   assert.equal(statusAfterResponse("negative", "envoye"), "refuse");
   assert.equal(statusAfterResponse("positive", "envoye"), "reponse_recue");
@@ -189,18 +196,18 @@ test("les statistiques d'envoi reflètent les vraies réponses", () => {
 
 // --- Planning promotionnel ----------------------------------------------------
 
-test("le planning se calcule à rebours depuis la date de sortie", () => {
+test("la checklist se calcule à rebours depuis la date de sortie", () => {
   const plan = generatePromoPlan("2026-09-30");
-  const first = plan.find((t) => t.title === "Valider l'artwork");
+  const first = plan.find((t) => t.title === "Artwork prêt");
   assert.ok(first);
-  assert.equal(first!.group_key, "J-28");
+  assert.equal(first!.group_key, "J−28");
   assert.equal(first!.due_date, "2026-09-02", "28 jours avant le 30 septembre");
 
-  const jourJ = plan.find((t) => t.title === "Publier l'annonce principale");
+  const jourJ = plan.find((t) => t.title === "Publication du jour de sortie");
   assert.equal(jourJ!.due_date, "2026-09-30");
 
-  const apres = plan.find((t) => t.title === "Effectuer un bilan intermédiaire");
-  assert.equal(apres!.due_date, "2026-10-14", "14 jours après la sortie");
+  const apres = plan.find((t) => t.title === "Suivi après la sortie");
+  assert.equal(apres!.due_date, "2026-10-07", "7 jours après la sortie");
 });
 
 test("sans date de sortie, les tâches sont créées sans échéance", () => {
@@ -209,11 +216,11 @@ test("sans date de sortie, les tâches sont créées sans échéance", () => {
   assert.ok(plan.every((t) => t.due_date === null));
 });
 
-test("le planning contient le calendrier et la checklist d'assets", () => {
+test("la checklist reste courte et strictement chronologique", () => {
   const plan = generatePromoPlan("2026-09-30");
-  assert.ok(plan.some((t) => t.is_asset && t.title === "ISRC"));
-  assert.ok(plan.some((t) => !t.is_asset && t.group_key === "J-7"));
-  assert.equal(generatePromoPlan("2026-09-30", { includeAssets: false }).some((t) => t.is_asset), false);
+  assert.equal(plan.length, 8);
+  const offsets = plan.map((t) => t.offset_days);
+  assert.deepEqual(offsets, [...offsets].sort((a, b) => a - b));
 });
 
 test("changer la date de sortie décale les échéances", () => {

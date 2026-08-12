@@ -219,13 +219,9 @@ export function AudioPlayer({
     }
   }, [volume, rate, currentId]);
 
-  if (versions.length === 0) {
-    return (
-      <div className={cn("card px-4 py-3 text-[13px] text-faint", className)}>
-        Aucun fichier audio pour cette track.
-      </div>
-    );
-  }
+  // Sans fichier, le lecteur n'a rien à montrer : la section qui l'entoure dit
+  // déjà qu'aucune version n'existe, inutile de le répéter dans un encadré.
+  if (versions.length === 0) return null;
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 

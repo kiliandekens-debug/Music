@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/auth/callback";
     if (!redirect.searchParams.has("suivant")) {
-      redirect.searchParams.set("suivant", path === "/" ? "/aujourdhui" : path);
+      redirect.searchParams.set("suivant", path === "/" ? "/studio" : path);
     }
     return NextResponse.redirect(redirect);
   }
@@ -68,7 +68,7 @@ export async function middleware(request: NextRequest) {
 
   if (user && path === "/connexion") {
     const redirect = request.nextUrl.clone();
-    redirect.pathname = "/aujourdhui";
+    redirect.pathname = "/studio";
     redirect.search = "";
     return NextResponse.redirect(redirect);
   }

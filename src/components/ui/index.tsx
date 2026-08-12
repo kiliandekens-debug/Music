@@ -423,33 +423,80 @@ export function SectionTitle({
   );
 }
 
+/**
+ * État vide, volontairement minuscule : une phrase, éventuellement un bouton.
+ * Un grand encadré en pointillés occupe la place d'un contenu réel sans rien
+ * apprendre — on s'en passe.
+ */
 export function EmptyState({
   title,
-  description,
   action,
-  icon,
   className,
 }: {
   title: string;
-  description?: string;
   action?: ReactNode;
-  icon?: ReactNode;
   className?: string;
 }) {
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line px-6 py-10 text-center",
-        className,
-      )}
-    >
-      {icon ? <div className="text-faint">{icon}</div> : null}
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-ink-soft">{title}</p>
-        {description ? <p className="max-w-sm text-[13px] text-faint">{description}</p> : null}
-      </div>
+    <div className={cn("flex flex-wrap items-center gap-3 py-3 text-[13px] text-muted", className)}>
+      <span>{title}</span>
       {action}
     </div>
+  );
+}
+
+/**
+ * Bloc repliable. Le titre porte l'essentiel, le résumé à droite dit ce qu'on
+ * trouve à l'intérieur pour éviter d'ouvrir un bloc vide.
+ */
+export function CollapsibleBlock({
+  title,
+  summary,
+  open,
+  onToggle,
+  action,
+  children,
+  className,
+}: {
+  title: string;
+  summary?: ReactNode;
+  open: boolean;
+  onToggle: () => void;
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  const bodyId = useId();
+  return (
+    <section className={cn("card overflow-hidden", className)}>
+      <div className="flex items-center gap-2 pr-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          aria-controls={bodyId}
+          className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3.5 text-left transition-colors duration-100 hover:bg-surface-2"
+        >
+          <IconChevronDown
+            size={16}
+            className={cn(
+              "shrink-0 text-faint transition-transform duration-150",
+              !open && "-rotate-90",
+            )}
+          />
+          <span className="text-[15px] font-semibold text-ink">{title}</span>
+          {summary ? (
+            <span className="ml-auto truncate text-[12px] text-faint">{summary}</span>
+          ) : null}
+        </button>
+        {action}
+      </div>
+      {open ? (
+        <div id={bodyId} className="border-t border-line px-4 py-4">
+          {children}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

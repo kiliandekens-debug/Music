@@ -1,16 +1,19 @@
 {
   "name": "Atelier — gestion de production musicale",
   "short_name": "Atelier",
-  "description": "Suivez chaque track de la première idée jusqu'à la sortie : pipeline, sessions de studio, labels, promotion et résultats.",
+  "description": "Suivez chaque track de la première idée jusqu'à la sortie : avancement, envois aux labels et préparation de la promotion.",
   "lang": "fr",
   "dir": "ltr",
-  "start_url": "/aujourdhui",
+  "start_url": "/studio",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#08080a",
   "theme_color": "#08080a",
-  "categories": ["productivity", "music"],
+  "categories": [
+    "productivity",
+    "music"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -33,28 +36,37 @@
   ],
   "shortcuts": [
     {
-      "name": "Aujourd'hui",
-      "short_name": "Aujourd'hui",
-      "url": "/aujourdhui",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
       "name": "Studio",
       "short_name": "Studio",
       "url": "/studio",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Mode Session",
-      "short_name": "Session",
-      "url": "/sessions/mode",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Labels",
       "short_name": "Labels",
       "url": "/labels",
-      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Promotion",
+      "short_name": "Promotion",
+      "url": "/promotion",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

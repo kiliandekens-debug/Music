@@ -76,18 +76,18 @@ node tools/verification/e2e.mjs
 ```
 
 Le parcours couvre les critères de validation du produit : connexion,
-onboarding, création et déplacement d'une track, checklist et recalcul de la
-progression, version audio, correction horodatée et saut du lecteur au bon
-instant, envoi à un label et suivi du délai, case « Répondu », campagne et
-planning à rebours, Mode Session avec bilan, persistance après actualisation,
-rendu mobile, et absence de fuite de données entre deux comptes.
+onboarding, navigation réduite à trois entrées, tableau à quatre colonnes sans
+défilement horizontal, fiche track en quatre blocs repliables, checklist et
+recalcul de la progression, version audio, correction horodatée et saut du
+lecteur au bon instant, envoi à un label et fenêtre « Répondu » à trois champs,
+checklist de sortie et compte à rebours, carnet de labels, disparition des
+écrans retirés, persistance après actualisation, rendu mobile, et absence de
+fuite de données entre deux comptes.
 
-Deux parcours complémentaires couvrent le reste des critères :
+Un parcours complémentaire couvre le tableau :
 
 ```bash
-node tools/verification/e2e-artwork-campagne.mjs    # artwork, proposition de campagne, réorganisation du planning
-node tools/verification/e2e-contenu-resultats.mjs   # contenu planifié, relevé de résultats, changement d'étape, fiche label
-node tools/verification/e2e-kanban.mjs              # glisser-déposer du pipeline et trace dans l'historique
+node tools/verification/e2e-tableau.mjs   # glisser-déposer entre colonnes et choix de la sous-étape
 ```
 
 Les captures d'écran sont écrites dans `/tmp/shots`.

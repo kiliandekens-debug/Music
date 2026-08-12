@@ -61,7 +61,7 @@ export function submissionTiming(
         Math.round((answered.getTime() - sent.getTime()) / 86_400_000),
       );
       return {
-        label: `Réponse reçue après ${plural(delay, "jour")}`,
+        label: delay === 0 ? "Réponse reçue le jour même" : `Réponse reçue après ${plural(delay, "jour")}`,
         tone: submission.response_type === "negative" ? "neutre" : "ok",
         sentDays,
         followupOverdueDays: null,

@@ -118,7 +118,7 @@ export function computeSuggestions(input: NextActionInput): Suggestion[] {
       trackId: track.id,
       trackTitle: track.title,
       taskId: task.id,
-      href: `/studio/${track.id}?onglet=taches`,
+      href: `/studio/${track.id}`,
       tone: isOverdue ? "danger" : "warn",
       bonus: -Math.min(overdueDays, 60) + (isUrgent ? -10 : 0),
     });
@@ -140,7 +140,7 @@ export function computeSuggestions(input: NextActionInput): Suggestion[] {
       trackId: track.id,
       trackTitle: track.title,
       promoTaskId: task.id,
-      href: `/studio/${track.id}?onglet=promotion`,
+      href: `/studio/${track.id}`,
       tone: "danger",
       bonus: -Math.min(overdueDays, 60),
     });
@@ -194,7 +194,7 @@ export function computeSuggestions(input: NextActionInput): Suggestion[] {
       trackId: track.id,
       trackTitle: track.title,
       promoTaskId: task.id,
-      href: `/studio/${track.id}?onglet=promotion`,
+      href: `/studio/${track.id}`,
       tone: untilRelease <= 3 ? "warn" : "info",
       bonus: untilRelease,
     });
@@ -242,7 +242,7 @@ export function computeSuggestions(input: NextActionInput): Suggestion[] {
       trackId: track.id,
       trackTitle: track.title,
       taskId: task.id,
-      href: `/studio/${track.id}?onglet=taches`,
+      href: `/studio/${track.id}`,
       tone: "info",
       bonus: 0,
     });
@@ -270,7 +270,7 @@ export function computeSuggestions(input: NextActionInput): Suggestion[] {
       trackId: track.id,
       trackTitle: track.title,
       taskId: nextTask.id,
-      href: `/studio/${track.id}?onglet=taches`,
+      href: `/studio/${track.id}`,
       tone: "ok",
       bonus: 100 - production.percent,
     });

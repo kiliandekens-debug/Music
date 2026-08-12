@@ -1,14 +1,4 @@
-import {
-  IconCalendar,
-  IconChart,
-  IconLabel,
-  IconMore,
-  IconRelease,
-  IconSession,
-  IconSettings,
-  IconStudio,
-  IconToday,
-} from "@/components/ui/icons";
+import { IconLabel, IconRelease, IconStudio } from "@/components/ui/icons";
 
 export interface NavItem {
   href: string;
@@ -16,28 +6,14 @@ export interface NavItem {
   icon: (props: { size?: number; className?: string }) => React.ReactElement;
 }
 
-/** Navigation principale, dans l'ordre défini pour l'application. */
+/**
+ * Navigation principale : trois destinations, pas une de plus.
+ * Studio pour avancer les tracks, Labels pour les envois, Promotion pour les
+ * sorties. Les paramètres restent accessibles par une icône discrète en bas de
+ * la barre latérale, ils ne sont pas une destination de travail.
+ */
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/aujourdhui", label: "Aujourd'hui", icon: IconToday },
   { href: "/studio", label: "Studio", icon: IconStudio },
-  { href: "/sessions", label: "Sessions", icon: IconSession },
-  { href: "/releases", label: "Releases", icon: IconRelease },
   { href: "/labels", label: "Labels", icon: IconLabel },
-  { href: "/calendrier", label: "Calendrier", icon: IconCalendar },
-  { href: "/analyses", label: "Analyses", icon: IconChart },
-  { href: "/parametres", label: "Paramètres", icon: IconSettings },
+  { href: "/promotion", label: "Promotion", icon: IconRelease },
 ];
-
-/** Navigation inférieure sur mobile : quatre sections + « Plus ». */
-export const MOBILE_NAV_ITEMS: NavItem[] = [
-  { href: "/aujourdhui", label: "Aujourd'hui", icon: IconToday },
-  { href: "/studio", label: "Studio", icon: IconStudio },
-  { href: "/releases", label: "Releases", icon: IconRelease },
-  { href: "/labels", label: "Labels", icon: IconLabel },
-  { href: "/plus", label: "Plus", icon: IconMore },
-];
-
-/** Sections regroupées derrière « Plus » sur mobile. */
-export const MORE_ITEMS: NavItem[] = NAV_ITEMS.filter(
-  (item) => !MOBILE_NAV_ITEMS.some((m) => m.href === item.href),
-);
