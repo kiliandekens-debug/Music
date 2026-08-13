@@ -8,8 +8,10 @@ import { useDebounced } from "@/lib/hooks";
 import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import { useUi } from "@/lib/store/ui";
-import { aliasLabel } from "@/lib/domain/board";
+import { aliasLabel, columnOf } from "@/lib/domain/board";
+import { plural } from "@/lib/format";
 import { Button, Modal, SearchInput, cn } from "@/components/ui";
+import { PageHeader } from "@/components/layout/page-header";
 import { IconPlus } from "@/components/ui/icons";
 import { Board } from "@/components/tracks/board";
 import { TrackForm } from "@/components/tracks/track-form";
@@ -17,7 +19,7 @@ import { TrackForm } from "@/components/tracks/track-form";
 export default function StudioPage() {
   const router = useRouter();
   const { workspaces } = useData();
-  const { visibleTracks, suggestions } = useDerived();
+  const { visibleTracks, suggestions, stageById } = useDerived();
   const { workspaceId, setWorkspaceId } = useUi();
 
   const [search, setSearch] = useState("");
@@ -25,6 +27,15 @@ export default function StudioPage() {
   const query = useDebounced(search, 180);
 
   const aliases = workspaces.filter((w) => !w.archived).sort((a, b) => a.position - b.position);
+
+  const inProgress = useMemo(
+    () =>
+      visibleTracks.filter((t) => {
+        const stage = t.stage_id ? stageById.get(t.stage_id) : undefined;
+        return columnOf(stage) === "en_cours";
+      }).length,
+    [visibleTracks, stageById],
+  );
 
   const tracks = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -50,41 +61,49 @@ export default function StudioPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1560px] px-5 pb-28 pt-4 lg:px-10 lg:pb-32 lg:pt-9">
-      <header className="mb-4 lg:mb-6">
-        <div className="flex items-center gap-3">
-          <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">Mes tracks</h1>
+      <PageHeader
+        title="Mes tracks"
+        eyebrow={
+          <>
+            {plural(visibleTracks.length, "track")}
+            {inProgress > 0 ? ` · ${inProgress} en cours` : ""}
+          </>
+        }
+        action={
           <SearchInput
             value={search}
             onChange={setSearch}
             placeholder="Rechercher"
-            className="ml-auto hidden w-56 sm:block"
+            className="hidden w-56 sm:block"
           />
-        </div>
-
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Rechercher une track"
-          className="mt-3 sm:hidden"
-        />
-
-        <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 lg:mx-0 lg:mt-4 lg:px-0">
-          <AliasChip
-            label="Toutes"
-            active={workspaceId === "tous"}
-            onClick={() => setWorkspaceId("tous")}
-          />
-          {aliases.map((workspace) => (
-            <AliasChip
-              key={workspace.id}
-              label={aliasLabel(workspace.name) ?? workspace.name}
-              color={accentHex(workspace.color)}
-              active={workspaceId === workspace.id}
-              onClick={() => setWorkspaceId(workspace.id)}
+        }
+        filters={
+          <>
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="Rechercher une track"
+              className="mb-3 sm:hidden"
             />
-          ))}
-        </div>
-      </header>
+            <div className="no-scrollbar -mx-5 flex gap-2 overflow-x-auto px-5 lg:mx-0 lg:px-0">
+              <AliasChip
+                label="Toutes"
+                active={workspaceId === "tous"}
+                onClick={() => setWorkspaceId("tous")}
+              />
+              {aliases.map((workspace) => (
+                <AliasChip
+                  key={workspace.id}
+                  label={aliasLabel(workspace.name) ?? workspace.name}
+                  color={accentHex(workspace.color)}
+                  active={workspaceId === workspace.id}
+                  onClick={() => setWorkspaceId(workspace.id)}
+                />
+              ))}
+            </div>
+          </>
+        }
+      />
 
       {urgent ? (
         <Link
@@ -126,7 +145,9 @@ export default function StudioPage() {
         onClick={() => setCreating(true)}
         aria-label="Nouvelle track"
         title="Nouvelle track"
-        className="fixed bottom-24 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_28px_-6px_var(--accent)] transition-[filter,transform] duration-150 hover:brightness-110 active:scale-95 lg:bottom-8 lg:left-1/2 lg:right-auto lg:-translate-x-1/2"
+        /* Centré partout : les flèches des cartes vivent à droite, le bouton ne doit
+             pas venir se poser dessus. */
+          className="fixed bottom-24 left-1/2 z-30 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_28px_-6px_var(--accent)] transition-[filter,transform] duration-150 hover:brightness-110 active:scale-95 lg:bottom-8"
       >
         <IconPlus size={24} />
       </button>

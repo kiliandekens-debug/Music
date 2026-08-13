@@ -89,11 +89,11 @@ export function TrackCard({
 
   // La colonne est large : la sous-étape précise où on en est à l'intérieur.
   const subStep = subStepOf(data.stage);
-  const meta = [
-    subStep ? SUB_STEP_LABEL[subStep] : null,
-    track.bpm ? `${Number(track.bpm)} BPM` : null,
-    track.musical_key,
-  ].filter(Boolean);
+  // Un nom d'étape est un mot, un BPM est une mesure : ils ne s'écrivent pas
+  // dans la même fonte.
+  const readout = [track.bpm ? `${Number(track.bpm)} BPM` : null, track.musical_key]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <article
@@ -111,7 +111,7 @@ export function TrackCard({
 
       <div className="py-3 pl-4 pr-3">
         <Link href={`/studio/${track.id}`} className="block">
-          <h3 className="line-clamp-2-safe pr-7 text-base font-semibold leading-tight text-ink">
+          <h3 className="line-clamp-2-safe pr-7 text-title leading-[1.15] text-ink">
             {track.title}
           </h3>
 
@@ -124,8 +124,12 @@ export function TrackCard({
             </p>
           ) : null}
 
-          {meta.length > 0 ? (
-            <p className="tabular mt-1 text-sm text-muted">{meta.join(" · ")}</p>
+          {subStep || readout ? (
+            <p className="mt-1 flex flex-wrap items-baseline gap-x-1.5 text-sm text-muted">
+              {subStep ? <span>{SUB_STEP_LABEL[subStep]}</span> : null}
+              {subStep && readout ? <span aria-hidden>·</span> : null}
+              {readout ? <span className="readout">{readout}</span> : null}
+            </p>
           ) : null}
 
           {track.is_blocked ? (
@@ -143,7 +147,7 @@ export function TrackCard({
                 color={percent >= 100 ? "var(--color-ok)" : color}
                 label="Production"
               />
-              <span className="tabular shrink-0 text-sm font-medium text-ink-soft">
+              <span className="readout shrink-0 text-sm font-medium text-ink-soft">
                 {percent} %
               </span>
             </div>
@@ -207,7 +211,7 @@ export function TrackCard({
                 size={14}
                 className={cn("shrink-0 transition-transform duration-150", openList && "rotate-90")}
               />
-              <span className="tabular truncate">
+              <span className="readout truncate">
                 {done}/{checklist.length} fait{done > 1 ? "s" : ""}
               </span>
             </button>

@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { formatDate } from "@/lib/format";
+import { formatDate, plural } from "@/lib/format";
 import { submissionTiming } from "@/lib/domain/submissions";
 import { useDebounced, useLocalState } from "@/lib/hooks";
 import { useData } from "@/lib/store/data";
@@ -19,6 +19,7 @@ import {
   cn,
 } from "@/components/ui";
 import { IconMore, IconPlus } from "@/components/ui/icons";
+import { PageHeader } from "@/components/layout/page-header";
 import { LabelForm } from "@/components/labels/label-form";
 import { RespondedDialog } from "@/components/labels/responded-dialog";
 import { LabelPanel } from "@/components/labels/label-panel";
@@ -123,6 +124,10 @@ function LabelsContent() {
       });
   }, [labels, query, styleFilter, submissionsByLabel, tracks]);
 
+  const toFollowUp = rows.filter(
+    (r) => r.last && !r.last.responded && submissionTiming(r.last).needsFollowup,
+  ).length;
+
   function openLabel(id: string | null) {
     const next = new URLSearchParams(params.toString());
     if (id) next.set("label", id);
@@ -142,39 +147,46 @@ function LabelsContent() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1560px] px-5 py-6 lg:px-10 lg:py-9">
-      <header className="mb-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">Labels</h1>
+    <div className="mx-auto w-full max-w-[1560px] px-5 pb-16 pt-4 lg:px-10 lg:pt-9">
+      <PageHeader
+        title="Labels"
+        eyebrow={
+          <>
+            {plural(rows.length, "label")}
+            {toFollowUp > 0 ? ` · ${plural(toFollowUp, "relance")} à faire` : ""}
+          </>
+        }
+        action={
           <Button variant="primary" size="lg" onClick={() => setCreating(true)}>
             <IconPlus size={17} />
             Ajouter un label
           </Button>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Nom, contact, e-mail…"
-            className="w-full sm:w-64"
-          />
-          <Select
-            value={styleFilter}
-            onChange={(e) => setStyleFilter(e.target.value)}
-            className="w-auto"
-            wrapperClassName="shrink-0"
-            aria-label="Style"
-          >
-            <option value="tous">Tous les styles</option>
-            {styles.map((style) => (
-              <option key={style} value={style}>
-                {style}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </header>
+        }
+        filters={
+          <div className="flex flex-wrap items-center gap-2">
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="Nom, contact, e-mail…"
+              className="w-full sm:w-64"
+            />
+            <Select
+              value={styleFilter}
+              onChange={(e) => setStyleFilter(e.target.value)}
+              className="w-auto"
+              wrapperClassName="shrink-0"
+              aria-label="Style"
+            >
+              <option value="tous">Tous les styles</option>
+              {styles.map((style) => (
+                <option key={style} value={style}>
+                  {style}
+                </option>
+              ))}
+            </Select>
+          </div>
+        }
+      />
 
       {rows.length === 0 ? (
         <p className="flex flex-wrap items-center gap-3 py-3 text-base text-muted">
@@ -193,12 +205,12 @@ function LabelsContent() {
           <div className="card hidden overflow-x-auto lg:block">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-line text-left text-label uppercase tracking-wide text-muted">
-                  <th className="px-5 py-3 font-medium">Label</th>
-                  <th className="px-4 py-3 font-medium">Dernière track</th>
-                  <th className="px-4 py-3 font-medium">Envoi</th>
-                  <th className="px-4 py-3 font-medium">Suivi</th>
-                  <th className="px-4 py-3 font-medium">Répondu</th>
+                <tr className="border-b border-line text-left text-muted">
+                  <th className="eyebrow px-5 py-3 font-medium">Label</th>
+                  <th className="eyebrow px-4 py-3 font-medium">Dernière track</th>
+                  <th className="eyebrow px-4 py-3 font-medium">Envoi</th>
+                  <th className="eyebrow px-4 py-3 font-medium">Suivi</th>
+                  <th className="eyebrow px-4 py-3 font-medium">Répondu</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -227,7 +239,7 @@ function LabelsContent() {
                         </button>
                       </td>
                       <td className="px-4 py-3.5 text-ink-soft">{trackTitle ?? "—"}</td>
-                      <td className="px-4 py-3.5 text-muted">
+                      <td className="readout px-4 py-3.5 text-muted">
                         {last?.sent_at ? formatDate(last.sent_at, "d MMM yyyy") : "—"}
                       </td>
                       <td className="px-4 py-3.5">

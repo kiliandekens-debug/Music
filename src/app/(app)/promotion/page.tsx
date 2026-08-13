@@ -3,12 +3,13 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { accentHex } from "@/lib/constants";
-import { formatDate, daysUntil } from "@/lib/format";
+import { formatDate, daysUntil, plural } from "@/lib/format";
 import { campaignProgress } from "@/lib/domain/progress";
 import { aliasLabel, nextActionOf } from "@/lib/domain/board";
 import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import { Button, Meter, SidePanel, cn } from "@/components/ui";
+import { PageHeader } from "@/components/layout/page-header";
 import { TrackArtwork } from "@/components/tracks/track-artwork";
 import { ReleaseChecklist } from "@/components/promo/release-checklist";
 import type { Track } from "@/lib/types";
@@ -56,14 +57,27 @@ export default function PromotionPage() {
     [visibleTracks, promoTasksByTrack],
   );
 
+  /** La sortie datée la plus proche, pour le surtitre. */
+  const next = useMemo(() => {
+    const upcoming = releases
+      .map((t) => ({ t, days: t.release_date ? daysUntil(t.release_date) : null }))
+      .filter((r): r is { t: Track; days: number } => r.days !== null && r.days >= 0)
+      .sort((a, b) => a.days - b.days)[0];
+    if (!upcoming) return null;
+    return upcoming.days === 0 ? "aujourd'hui" : `dans ${plural(upcoming.days, "jour")}`;
+  }, [releases]);
+
   return (
-    <div className="mx-auto w-full max-w-[1560px] px-5 py-6 lg:px-10 lg:py-9">
-      <header className="mb-7">
-        <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">Promotion</h1>
-        <p className="mt-1.5 text-base text-muted">
-          Les tracks dont la sortie est datée ou déjà préparée.
-        </p>
-      </header>
+    <div className="mx-auto w-full max-w-[1560px] px-5 pb-16 pt-4 lg:px-10 lg:pt-9">
+      <PageHeader
+        title="Promotion"
+        eyebrow={
+          <>
+            {plural(releases.length, "sortie")}
+            {next ? ` · prochaine ${next}` : ""}
+          </>
+        }
+      />
 
       {releases.length === 0 ? (
         <p className="flex flex-wrap items-center gap-3 py-4 text-base text-muted">
@@ -119,7 +133,7 @@ export default function PromotionPage() {
                   {count ? (
                     <span
                       className={cn(
-                        "absolute right-3 top-3 rounded-full px-3 py-1 text-sm font-semibold backdrop-blur",
+                        "readout absolute right-3 top-3 rounded-full px-3 py-1 text-sm font-semibold backdrop-blur",
                         count.soon
                           ? "bg-accent text-white"
                           : "bg-canvas/70 text-ink-soft",
@@ -131,7 +145,7 @@ export default function PromotionPage() {
                 </div>
 
                 <div className="p-5">
-                  <h2 className="truncate text-title font-semibold leading-tight tracking-[-0.01em]">
+                  <h2 className="truncate text-title">
                     {track.title}
                   </h2>
                   <p className="mt-1 truncate text-sm text-muted">
@@ -142,7 +156,9 @@ export default function PromotionPage() {
                   <p className="mt-3 text-sm text-ink-soft">
                     {track.release_date ? (
                       <>
-                        {formatDate(track.release_date, "d MMMM yyyy")}
+                        <span className="readout">
+                          {formatDate(track.release_date, "d MMMM yyyy")}
+                        </span>
                         {count?.unit ? <span className="text-muted"> · {count.unit}</span> : null}
                       </>
                     ) : (
@@ -158,7 +174,7 @@ export default function PromotionPage() {
                         color={progress.percent >= 100 ? "var(--color-ok)" : "var(--color-info)"}
                         label="Préparation de la sortie"
                       />
-                      <span className="tabular shrink-0 text-sm text-muted">
+                      <span className="readout shrink-0 text-sm text-muted">
                         {progress.done}/{progress.total}
                       </span>
                     </div>

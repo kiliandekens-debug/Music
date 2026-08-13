@@ -109,12 +109,10 @@ export default function TrackDetailPage() {
     releaseDate: track.release_date,
   });
 
-  const meta = [
-    aliasLabel(workspace?.name),
-    track.genre,
-    track.bpm ? `${Number(track.bpm)} BPM` : null,
-    track.musical_key,
-  ].filter(Boolean);
+  const words = [aliasLabel(workspace?.name), track.genre].filter(Boolean);
+  const readout = [track.bpm ? `${Number(track.bpm)} BPM` : null, track.musical_key]
+    .filter(Boolean)
+    .join(" · ");
 
   const toggleBlock = (id: BlockId) =>
     setOpen(open.includes(id) ? open.filter((b) => b !== id) : [...open, id]);
@@ -170,11 +168,15 @@ export default function TrackDetailPage() {
             />
 
             <div className="min-w-0 flex-1">
-              <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">
+              <h1 className="text-page">
                 {track.title}
               </h1>
-              {meta.length > 0 ? (
-                <p className="mt-1.5 text-base text-muted">{meta.join(" · ")}</p>
+              {words.length > 0 || readout ? (
+                <p className="mt-1.5 flex flex-wrap items-baseline gap-x-2 text-base text-muted">
+                  {words.length > 0 ? <span>{words.join(" · ")}</span> : null}
+                  {words.length > 0 && readout ? <span aria-hidden>·</span> : null}
+                  {readout ? <span className="readout">{readout}</span> : null}
+                </p>
               ) : null}
 
               {progress && progress.production.total > 0 ? (
@@ -185,7 +187,7 @@ export default function TrackDetailPage() {
                     color={progress.production.percent >= 100 ? "var(--color-ok)" : color}
                     label="Production"
                   />
-                  <span className="tabular text-sm font-medium text-ink-soft">
+                  <span className="readout text-sm font-medium text-ink-soft">
                     {progress.production.done} / {progress.production.total}
                   </span>
                 </div>
@@ -264,7 +266,7 @@ export default function TrackDetailPage() {
                 ACTION_TONE[nextAction.tone],
               )}
             >
-              <span className="text-label uppercase tracking-[0.08em] text-muted">Ensuite</span>
+              <span className="eyebrow text-muted">Ensuite</span>
               <span className="font-medium">{nextAction.text}</span>
             </p>
           ) : null}

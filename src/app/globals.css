@@ -33,10 +33,12 @@
   --color-danger: #fb7185;
   --color-info: #7dd3fc;
 
-  --font-sans: "Geist", "Inter", ui-sans-serif, system-ui, -apple-system,
+  --font-sans: var(--font-sans-loaded), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo,
-    Consolas, monospace;
+  --font-mono: var(--font-mono-loaded), ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, monospace;
+  --font-display: var(--font-display), var(--font-sans-loaded), ui-sans-serif,
+    system-ui, sans-serif;
 
   /* Échelle typographique : six valeurs, un rôle chacune. Il y en avait huit
      entre 11 et 15 px, ce qui empêchait toute hiérarchie. */
@@ -71,12 +73,24 @@ body {
 /* Les titres ne suivent pas l'interligne du texte courant : sans cela, un
    titre de 34 px occupe 56 px de haut et repousse le contenu hors de l'écran. */
 h1, h2, h3 {
-  line-height: 1.15;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
+/*
+ * Le fond n'est pas un aplat : une lueur froide descend du haut de l'écran et
+ * s'éteint vers le bas, comme la lumière d'un écran dans une pièce sombre.
+ * L'écart reste sous les 5 % de luminance — on ne le remarque pas, on le sent.
+ */
 body {
-  background: var(--color-canvas);
+  background:
+    radial-gradient(120% 68% at 22% -8%, #191527 0%, transparent 62%),
+    linear-gradient(to bottom, #0f0d15 0%, var(--color-canvas) 42%);
+  background-attachment: fixed;
+  background-color: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -220,12 +234,18 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 
 /* Utilitaires maison */
-/* Une carte tient par sa matière et son ombre, pas par son trait. */
+/*
+ * Une carte tient par sa matière et son ombre, pas par son trait. Un filet de
+ * lumière court sur son arête haute : c'est ce qui fait qu'un panneau semble
+ * posé sous une source lumineuse plutôt que peint sur le fond.
+ */
 .card {
   background: var(--color-surface);
   border: 1px solid transparent;
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    var(--shadow-card);
 }
 .card-hover {
   transition: background-color 0.14s var(--ease-out-quick),
@@ -234,7 +254,9 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .card-hover:hover {
   background: var(--color-surface-2);
-  box-shadow: var(--shadow-lift);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    var(--shadow-lift);
 }
 @media (hover: hover) {
   .card-hover:hover {
@@ -255,6 +277,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Afficheur : tout ce qui est une donnée chiffrée — BPM, tonalité, pourcentage,
+ * compte à rebours, compteur. Le monospace les aligne et leur donne le statut
+ * d'une mesure lue sur un appareil, pas d'un mot au fil du texte.
+ */
+.readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Micro-étiquette : le plus petit cran, en capitales espacées. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .line-clamp-2-safe {
   display: -webkit-box;

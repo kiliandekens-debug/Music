@@ -277,11 +277,9 @@ function BoardColumn({
     <section className="flex min-w-0 flex-col">
       <header className="mb-2.5 flex items-center gap-2 px-1">
         <Icon size={15} className="shrink-0 text-muted" />
-        <h2 className="text-label font-semibold uppercase tracking-[0.08em] text-ink-soft">
-          {name}
-        </h2>
+        <h2 className="eyebrow text-ink-soft">{name}</h2>
         {tracks.length > 0 ? (
-          <span className="tabular ml-auto text-label font-semibold text-accent-ink">
+          <span className="readout ml-auto text-label font-semibold text-accent-ink">
             {tracks.length}
           </span>
         ) : null}
@@ -369,7 +367,7 @@ function MobileBoard({
               <Icon size={14} />
               {column.name}
               {count > 0 ? (
-                <span className={cn("tabular", active ? "text-white/70" : "text-muted")}>
+                <span className={cn("readout", active ? "text-white/70" : "text-muted")}>
                   {count}
                 </span>
               ) : null}
