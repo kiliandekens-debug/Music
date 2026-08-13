@@ -50,6 +50,13 @@ export const IconRelease = ({ size = 20, className }: IconProps) => (
   </svg>
 );
 
+export const IconTag = ({ size = 20, className }: IconProps) => (
+  <svg {...base(size, className)}>
+    <path d="M3.5 11.2V5.4a1.9 1.9 0 0 1 1.9-1.9h5.8a1.9 1.9 0 0 1 1.35.56l7.4 7.4a1.9 1.9 0 0 1 0 2.7l-5.8 5.8a1.9 1.9 0 0 1-2.7 0l-7.4-7.4a1.9 1.9 0 0 1-.55-1.36Z" />
+    <circle cx="7.8" cy="7.8" r="1.15" />
+  </svg>
+);
+
 export const IconLabel = ({ size = 20, className }: IconProps) => (
   <svg {...base(size, className)}>
     <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 16.5z" />

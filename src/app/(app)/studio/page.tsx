@@ -49,7 +49,7 @@ export default function StudioPage() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1560px] px-5 py-4 lg:px-10 lg:py-9">
+    <div className="mx-auto w-full max-w-[1560px] px-5 pb-28 pt-4 lg:px-10 lg:pb-32 lg:pt-9">
       <header className="mb-4 lg:mb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-page font-semibold leading-[1.1] tracking-[-0.02em]">Mes tracks</h1>
@@ -59,16 +59,6 @@ export default function StudioPage() {
             placeholder="Rechercher"
             className="ml-auto hidden w-56 sm:block"
           />
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => setCreating(true)}
-            className="ml-auto shrink-0 sm:ml-0"
-          >
-            <IconPlus size={17} />
-            <span className="sm:hidden">Nouvelle</span>
-            <span className="hidden sm:inline">Nouvelle track</span>
-          </Button>
         </div>
 
         <SearchInput
@@ -123,6 +113,23 @@ export default function StudioPage() {
       ) : (
         <Board tracks={tracks} />
       )}
+
+      {/* Une seule action d'ajout, toujours au même endroit : au pouce.
+          Un voile dégradé passe sous le bouton pour que les cartes glissent
+          dessous au lieu de le heurter. */}
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-20 h-44 bg-gradient-to-t from-canvas via-canvas/90 to-transparent lg:h-28"
+        aria-hidden
+      />
+      <button
+        type="button"
+        onClick={() => setCreating(true)}
+        aria-label="Nouvelle track"
+        title="Nouvelle track"
+        className="fixed bottom-24 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent text-white shadow-[0_8px_28px_-6px_var(--accent)] transition-[filter,transform] duration-150 hover:brightness-110 active:scale-95 lg:bottom-8 lg:left-1/2 lg:right-auto lg:-translate-x-1/2"
+      >
+        <IconPlus size={24} />
+      </button>
 
       <Modal open={creating} onClose={() => setCreating(false)} title="Nouvelle track" size="lg">
         <TrackForm

@@ -1,20 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { accentHex } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import {
   SUB_STEP_LABEL,
-  aliasLabel,
   labelStatusOf,
   nextActionOf,
   subStepOf,
   type NextAction,
 } from "@/lib/domain/board";
 import type { TrackProgress } from "@/lib/domain/progress";
-import { Badge, Meter, cn } from "@/components/ui";
-import { IconWarning } from "@/components/ui/icons";
-import { TrackArtwork } from "./track-artwork";
+import { Badge, Checkbox, Meter, cn } from "@/components/ui";
+import { IconChevronLeft, IconChevronRight, IconTag, IconWarning } from "@/components/ui/icons";
 import type {
   LabelSubmission,
   PromotionTask,
@@ -33,6 +32,8 @@ export interface TrackCardData {
   promoTasks: PromotionTask[];
   submissions: LabelSubmission[];
   labelName: (labelId: string) => string;
+  /** Label visé ou signé, affiché sous le titre. */
+  labelTitle: string | null;
 }
 
 const ACTION_TONE: Record<NextAction["tone"], string> = {
@@ -42,35 +43,34 @@ const ACTION_TONE: Record<NextAction["tone"], string> = {
   neutre: "text-ink-soft",
 };
 
-const ACTION_DOT: Record<NextAction["tone"], string> = {
-  danger: "bg-danger",
-  warn: "bg-warn",
-  info: "bg-accent",
-  neutre: "bg-line-strong",
-};
-
 /**
- * Carte d'une track.
+ * Carte d'une track : compacte, tout se lit sans ouvrir la fiche.
  *
- * Elle doit se lire d'un coup d'œil, de haut en bas : la pochette et le titre
- * disent quelle track, la couleur de l'alias dit sous quel nom, la barre dit où
- * on en est, la ligne colorée dit quoi faire ensuite. Rien qui vaille zéro n'est
- * affiché : un compteur vide n'aide personne.
+ * Titre, label, BPM et tonalité, avancement chiffré, puis une barre d'actions :
+ * le nombre de tâches faites, qui se déplie sur la carte, et deux flèches pour
+ * faire avancer la track d'une colonne sans quitter le tableau.
  */
 export function TrackCard({
   data,
   dragging,
   actions,
+  onMove,
+  canMoveBack,
+  canMoveForward,
+  onToggleTask,
 }: {
   data: TrackCardData;
   dragging?: boolean;
   actions?: React.ReactNode;
+  onMove?: (direction: -1 | 1) => void;
+  canMoveBack?: boolean;
+  canMoveForward?: boolean;
+  onToggleTask?: (task: TrackTask) => void;
 }) {
-  const { track, workspace, stage, progress } = data;
+  const { track, workspace, progress, labelTitle } = data;
+  const [openList, setOpenList] = useState(false);
 
-  const alias = aliasLabel(workspace?.name);
   const color = accentHex(workspace?.color);
-  const subStep = subStepOf(stage);
   const labelStatus = labelStatusOf(data.submissions);
   const nextAction = nextActionOf({
     tasks: data.tasks,
@@ -80,9 +80,20 @@ export function TrackCard({
     releaseDate: track.release_date,
   });
 
-  // La promotion n'apparaît que si une sortie a réellement été préparée.
-  const promoStarted = data.promoTasks.length > 0;
+  const checklist = data.tasks
+    .filter((t) => t.category === "production" && t.status !== "ignoree")
+    .sort((a, b) => a.position - b.position);
+  const done = checklist.filter((t) => t.status === "terminee").length;
   const percent = progress.production.percent;
+  const promoStarted = data.promoTasks.length > 0;
+
+  // La colonne est large : la sous-étape précise où on en est à l'intérieur.
+  const subStep = subStepOf(data.stage);
+  const meta = [
+    subStep ? SUB_STEP_LABEL[subStep] : null,
+    track.bpm ? `${Number(track.bpm)} BPM` : null,
+    track.musical_key,
+  ].filter(Boolean);
 
   return (
     <article
@@ -98,99 +109,183 @@ export function TrackCard({
         aria-hidden
       />
 
-      <Link href={`/studio/${track.id}`} className="block py-4 pl-4 pr-3.5">
-        <div className="flex items-start gap-3">
-          <TrackArtwork
-            track={track}
-            color={color}
-            className="h-10 w-10 rounded-[10px]"
-            iconSize={15}
-          />
-          <div className="min-w-0 flex-1">
-            {/* Un titre de track ne se coupe pas : il passe à la ligne. */}
-            <h3 className="line-clamp-2-safe pr-8 text-title font-semibold leading-[1.15] tracking-[-0.01em] text-ink">
-              {track.title}
-            </h3>
-            <p className="mt-1.5 truncate text-sm text-muted">
-              {[alias, subStep ? SUB_STEP_LABEL[subStep] : null].filter(Boolean).join(" · ")}
+      <div className="py-3 pl-4 pr-3">
+        <Link href={`/studio/${track.id}`} className="block">
+          <h3 className="line-clamp-2-safe pr-7 text-base font-semibold leading-tight text-ink">
+            {track.title}
+          </h3>
+
+          {labelTitle ? (
+            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-soft">
+              <span className="shrink-0" style={{ color }}>
+                <IconTag size={13} />
+              </span>
+              <span className="truncate">{labelTitle}</span>
             </p>
+          ) : null}
+
+          {meta.length > 0 ? (
+            <p className="tabular mt-1 text-sm text-muted">{meta.join(" · ")}</p>
+          ) : null}
+
+          {track.is_blocked ? (
+            <p className="mt-2 flex items-start gap-1.5 text-sm leading-snug text-danger">
+              <IconWarning size={13} className="mt-0.5 shrink-0" />
+              <span className="line-clamp-2-safe">{track.blocked_reason || "Bloquée"}</span>
+            </p>
+          ) : null}
+
+          {progress.production.total > 0 ? (
+            <div className="mt-3 flex items-center gap-2.5">
+              <Meter
+                className="flex-1"
+                value={percent}
+                color={percent >= 100 ? "var(--color-ok)" : color}
+                label="Production"
+              />
+              <span className="tabular shrink-0 text-sm font-medium text-ink-soft">
+                {percent} %
+              </span>
+            </div>
+          ) : null}
+
+          {promoStarted ? (
+            <div className="mt-2 flex items-center gap-2.5">
+              <span className="shrink-0 text-label uppercase tracking-wide text-muted">Promo</span>
+              <Meter
+                thin
+                className="flex-1"
+                value={progress.promotion.percent}
+                color="var(--color-info)"
+                label="Promotion"
+              />
+            </div>
+          ) : null}
+
+          {nextAction && checklist.length === 0 ? (
+            <p className={cn("mt-2.5 text-sm leading-snug", ACTION_TONE[nextAction.tone])}>
+              {nextAction.text}
+            </p>
+          ) : null}
+
+          {labelStatus || track.release_date ? (
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              {labelStatus ? (
+                <Badge
+                  tone={
+                    labelStatus.tone === "ok"
+                      ? "ok"
+                      : labelStatus.tone === "warn"
+                        ? "warn"
+                        : labelStatus.tone === "info"
+                          ? "info"
+                          : "neutre"
+                  }
+                >
+                  {labelStatus.text}
+                </Badge>
+              ) : null}
+              {track.release_date ? (
+                <span className="text-sm text-muted">
+                  Sortie {formatDate(track.release_date, "d MMM")}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+        </Link>
+
+        {/* Barre d'actions : l'avancement se déplie, les flèches font avancer. */}
+        <div className="mt-3 flex items-center gap-2 border-t border-line/60 pt-2">
+          {checklist.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => setOpenList((v) => !v)}
+              aria-expanded={openList}
+              className="-ml-1 flex min-w-0 items-center gap-1 rounded-md px-1 py-1 text-sm text-muted transition-colors hover:text-ink"
+            >
+              <IconChevronRight
+                size={14}
+                className={cn("shrink-0 transition-transform duration-150", openList && "rotate-90")}
+              />
+              <span className="tabular truncate">
+                {done}/{checklist.length} fait{done > 1 ? "s" : ""}
+              </span>
+            </button>
+          ) : (
+            <span className="text-sm text-muted">Aucune tâche</span>
+          )}
+
+          <div className="ml-auto flex items-center gap-1">
+            <MoveButton
+              label="Reculer d'une colonne"
+              disabled={!canMoveBack}
+              onClick={() => onMove?.(-1)}
+            >
+              <IconChevronLeft size={15} />
+            </MoveButton>
+            <MoveButton
+              label="Avancer d'une colonne"
+              disabled={!canMoveForward}
+              onClick={() => onMove?.(1)}
+            >
+              <IconChevronRight size={15} />
+            </MoveButton>
           </div>
         </div>
 
-        {track.is_blocked ? (
-          <p className="mt-3 flex items-start gap-1.5 text-sm leading-snug text-danger">
-            <IconWarning size={14} className="mt-0.5 shrink-0" />
-            <span className="line-clamp-2-safe">{track.blocked_reason || "Bloquée"}</span>
-          </p>
+        {openList && checklist.length > 0 ? (
+          <ul className="mt-1 space-y-0.5 border-t border-line/60 pt-2">
+            {checklist.map((task) => (
+              <li key={task.id} className="flex items-center gap-2 py-0.5">
+                <Checkbox
+                  checked={task.status === "terminee"}
+                  onChange={() => onToggleTask?.(task)}
+                />
+                <span
+                  className={cn(
+                    "min-w-0 flex-1 truncate text-sm",
+                    task.status === "terminee" ? "text-muted line-through" : "text-ink-soft",
+                  )}
+                >
+                  {task.title}
+                </span>
+              </li>
+            ))}
+          </ul>
         ) : null}
+      </div>
 
-        {progress.production.total > 0 ? (
-          <div className="mt-4 flex items-center gap-2.5">
-            <Meter
-              className="flex-1"
-              value={percent}
-              color={percent >= 100 ? "var(--color-ok)" : color}
-              label="Production"
-            />
-            <span className="tabular shrink-0 text-sm font-medium text-ink-soft">{percent} %</span>
-          </div>
-        ) : null}
-
-        {promoStarted ? (
-          <div className="mt-2 flex items-center gap-2.5">
-            <span className="shrink-0 text-label uppercase tracking-wide text-muted">Promo</span>
-            <Meter
-              thin
-              className="flex-1"
-              value={progress.promotion.percent}
-              color="var(--color-info)"
-              label="Promotion"
-            />
-          </div>
-        ) : null}
-
-        {nextAction ? (
-          <p
-            className={cn(
-              "mt-4 flex items-start gap-2 text-sm leading-snug",
-              ACTION_TONE[nextAction.tone],
-            )}
-          >
-            <span
-              className={cn("mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full", ACTION_DOT[nextAction.tone])}
-              aria-hidden
-            />
-            <span className="line-clamp-2-safe">{nextAction.text}</span>
-          </p>
-        ) : null}
-
-        {labelStatus || track.release_date ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line/60 pt-3">
-            {labelStatus ? (
-              <Badge
-                tone={
-                  labelStatus.tone === "ok"
-                    ? "ok"
-                    : labelStatus.tone === "warn"
-                      ? "warn"
-                      : labelStatus.tone === "info"
-                        ? "info"
-                        : "neutre"
-                }
-              >
-                {labelStatus.text}
-              </Badge>
-            ) : null}
-            {track.release_date ? (
-              <span className="text-sm text-ink-soft">
-                Sortie {formatDate(track.release_date, "d MMM")}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-      </Link>
-
-      {actions ? <div className="absolute right-2.5 top-3.5">{actions}</div> : null}
+      {actions ? <div className="absolute right-2 top-2">{actions}</div> : null}
     </article>
+  );
+}
+
+function MoveButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 text-ink-soft transition-colors duration-100",
+        disabled
+          ? "cursor-not-allowed opacity-30"
+          : "hover:border-line-strong hover:bg-surface-3 hover:text-ink",
+      )}
+    >
+      {children}
+    </button>
   );
 }

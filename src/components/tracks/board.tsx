@@ -25,9 +25,23 @@ import {
 import { useData } from "@/lib/store/data";
 import { useDerived } from "@/lib/store/selectors";
 import { IconButton, Menu, MenuItem, MenuLabel, MenuSeparator, cn } from "@/components/ui";
-import { IconMore } from "@/components/ui/icons";
+import {
+  IconCheck,
+  IconMore,
+  IconSparks,
+  IconStudio,
+  IconTarget,
+} from "@/components/ui/icons";
 import { TrackCard, type TrackCardData } from "./track-card";
-import type { Track } from "@/lib/types";
+import type { Track, TrackTask } from "@/lib/types";
+
+/** Une icône par colonne : la forme se reconnaît avant que le mot ne se lise. */
+const COLUMN_ICON: Record<ColumnId, (p: { size?: number; className?: string }) => React.ReactElement> = {
+  idees: IconSparks,
+  en_cours: IconStudio,
+  finalisation: IconTarget,
+  terminees: IconCheck,
+};
 
 /**
  * Tableau de production en quatre colonnes.
@@ -35,9 +49,16 @@ import type { Track } from "@/lib/types";
  * horizontal. Sur mobile, on choisit une colonne et on la lit verticalement.
  */
 export function Board({ tracks }: { tracks: Track[] }) {
-  const { stages, update, log, touchTrack } = useData();
-  const { workspaceById, stageById, progressByTrack, tasksByTrack, promoTasksByTrack, submissionsByTrack, labelById } =
-    useDerived();
+  const { stages, labels, update, log, touchTrack } = useData();
+  const {
+    workspaceById,
+    stageById,
+    progressByTrack,
+    tasksByTrack,
+    promoTasksByTrack,
+    submissionsByTrack,
+    labelById,
+  } = useDerived();
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
@@ -55,6 +76,10 @@ export function Board({ tracks }: { tracks: Track[] }) {
     const labelName = (id: string) => labelById.get(id)?.name ?? "ce label";
     const map = new Map<string, TrackCardData>();
     for (const track of tracks) {
+      const submissions = submissionsByTrack.get(track.id) ?? [];
+      // Le label affiché est celui qui a signé, sinon celui qui est visé.
+      const signed = submissions.find((s) => s.status === "signe");
+      const labelId = signed?.label_id ?? track.intended_label_id;
       map.set(track.id, {
         track,
         workspace: track.workspace_id ? workspaceById.get(track.workspace_id) : undefined,
@@ -62,13 +87,15 @@ export function Board({ tracks }: { tracks: Track[] }) {
         progress: progressByTrack.get(track.id)!,
         tasks: tasksByTrack.get(track.id) ?? [],
         promoTasks: promoTasksByTrack.get(track.id) ?? [],
-        submissions: submissionsByTrack.get(track.id) ?? [],
+        submissions,
         labelName,
+        labelTitle: labelId ? (labels.find((l) => l.id === labelId)?.name ?? null) : null,
       });
     }
     return map;
   }, [
     tracks,
+    labels,
     workspaceById,
     stageById,
     progressByTrack,
@@ -94,6 +121,14 @@ export function Board({ tracks }: { tracks: Track[] }) {
     });
   }
 
+  /** Décalage d'une colonne, depuis les flèches de la carte. */
+  function shift(track: Track, direction: -1 | 1) {
+    const stage = track.stage_id ? stageById.get(track.stage_id) : undefined;
+    const index = COLUMNS.findIndex((c) => c.id === columnOf(stage));
+    const target = COLUMNS[index + direction];
+    if (target) void moveToColumn(track, target.id);
+  }
+
   async function setSubStep(track: Track, subStep: SubStep) {
     const stage = stageForSubStep(subStep, stages);
     if (!stage || stage.id === track.stage_id) return;
@@ -108,14 +143,23 @@ export function Board({ tracks }: { tracks: Track[] }) {
     });
   }
 
+  async function toggleTask(task: TrackTask) {
+    const done = task.status === "terminee";
+    await update("track_tasks", task.id, {
+      status: done ? "a_faire" : "terminee",
+      completed_at: done ? null : new Date().toISOString(),
+    });
+    touchTrack(task.track_id);
+  }
+
   const cardMenu = (track: Track) => {
     const stage = track.stage_id ? stageById.get(track.stage_id) : undefined;
     const column = columnOf(stage);
     return (
       <Menu
         trigger={(props) => (
-          <IconButton label="Déplacer" className="bg-surface/80 backdrop-blur" {...props}>
-            <IconMore size={16} />
+          <IconButton label="Déplacer" className="h-7 w-7" {...props}>
+            <IconMore size={15} />
           </IconButton>
         )}
       >
@@ -148,6 +192,19 @@ export function Board({ tracks }: { tracks: Track[] }) {
     );
   };
 
+  /** Propriétés communes aux cartes, ordinateur comme mobile. */
+  const cardProps = (track: Track) => {
+    const stage = track.stage_id ? stageById.get(track.stage_id) : undefined;
+    const index = COLUMNS.findIndex((c) => c.id === columnOf(stage));
+    return {
+      actions: cardMenu(track),
+      onMove: (direction: -1 | 1) => shift(track, direction),
+      canMoveBack: index > 0,
+      canMoveForward: index < COLUMNS.length - 1,
+      onToggleTask: (task: TrackTask) => void toggleTask(task),
+    };
+  };
+
   function handleDragEnd(event: DragEndEvent) {
     setDraggingId(null);
     const track = tracks.find((t) => t.id === String(event.active.id));
@@ -172,7 +229,7 @@ export function Board({ tracks }: { tracks: Track[] }) {
               name={column.name}
               tracks={byColumn.get(column.id) ?? []}
               cardData={cardData}
-              menu={cardMenu}
+              cardProps={cardProps}
             />
           ))}
         </div>
@@ -186,9 +243,18 @@ export function Board({ tracks }: { tracks: Track[] }) {
         </DragOverlay>
       </DndContext>
 
-      <MobileBoard byColumn={byColumn} cardData={cardData} menu={cardMenu} />
+      <MobileBoard byColumn={byColumn} cardData={cardData} cardProps={cardProps} />
     </>
   );
+}
+
+/** Ce que la colonne transmet à chaque carte. */
+interface CardProps {
+  actions: React.ReactNode;
+  onMove: (direction: -1 | 1) => void;
+  canMoveBack: boolean;
+  canMoveForward: boolean;
+  onToggleTask: (task: TrackTask) => void;
 }
 
 function BoardColumn({
@@ -196,24 +262,26 @@ function BoardColumn({
   name,
   tracks,
   cardData,
-  menu,
+  cardProps,
 }: {
   id: ColumnId;
   name: string;
   tracks: Track[];
   cardData: Map<string, TrackCardData>;
-  menu: (track: Track) => React.ReactNode;
+  cardProps: (track: Track) => CardProps;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
+  const Icon = COLUMN_ICON[id];
 
   return (
     <section className="flex min-w-0 flex-col">
       <header className="mb-2.5 flex items-center gap-2 px-1">
+        <Icon size={15} className="shrink-0 text-muted" />
         <h2 className="text-label font-semibold uppercase tracking-[0.08em] text-ink-soft">
           {name}
         </h2>
         {tracks.length > 0 ? (
-          <span className="tabular flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-3 px-1.5 text-label font-medium text-muted">
+          <span className="tabular ml-auto text-label font-semibold text-accent-ink">
             {tracks.length}
           </span>
         ) : null}
@@ -226,7 +294,12 @@ function BoardColumn({
         )}
       >
         {tracks.map((track) => (
-          <DraggableCard key={track.id} track={track} data={cardData.get(track.id)} menu={menu} />
+          <DraggableCard
+            key={track.id}
+            track={track}
+            data={cardData.get(track.id)}
+            cardProps={cardProps}
+          />
         ))}
       </div>
     </section>
@@ -236,18 +309,18 @@ function BoardColumn({
 function DraggableCard({
   track,
   data,
-  menu,
+  cardProps,
 }: {
   track: Track;
   data: TrackCardData | undefined;
-  menu: (track: Track) => React.ReactNode;
+  cardProps: (track: Track) => CardProps;
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: track.id });
   if (!data) return null;
 
   return (
     <div ref={setNodeRef} {...attributes} {...listeners} className={cn(isDragging && "opacity-40")}>
-      <TrackCard data={data} actions={menu(track)} />
+      <TrackCard data={data} {...cardProps(track)} />
     </div>
   );
 }
@@ -256,11 +329,11 @@ function DraggableCard({
 function MobileBoard({
   byColumn,
   cardData,
-  menu,
+  cardProps,
 }: {
   byColumn: Map<ColumnId, Track[]>;
   cardData: Map<string, TrackCardData>;
-  menu: (track: Track) => React.ReactNode;
+  cardProps: (track: Track) => CardProps;
 }) {
   /*
    * On ouvre sur « En cours » quand il y a du travail en cours, sinon sur la
@@ -275,10 +348,11 @@ function MobileBoard({
 
   return (
     <div className="lg:hidden">
-      <div className="no-scrollbar -mx-4 mb-3 flex gap-1.5 overflow-x-auto px-4">
+      <div className="no-scrollbar -mx-5 mb-3 flex gap-1.5 overflow-x-auto px-5">
         {COLUMNS.map((column) => {
           const count = byColumn.get(column.id)?.length ?? 0;
           const active = selected === column.id;
+          const Icon = COLUMN_ICON[column.id];
           return (
             <button
               key={column.id}
@@ -292,9 +366,12 @@ function MobileBoard({
                   : "border-line bg-surface text-ink-soft",
               )}
             >
+              <Icon size={14} />
               {column.name}
               {count > 0 ? (
-                <span className={cn("tabular", active ? "text-white/70" : "text-muted")}>{count}</span>
+                <span className={cn("tabular", active ? "text-white/70" : "text-muted")}>
+                  {count}
+                </span>
               ) : null}
             </button>
           );
@@ -304,7 +381,7 @@ function MobileBoard({
       <div className="space-y-3">
         {tracks.map((track) => {
           const data = cardData.get(track.id);
-          return data ? <TrackCard key={track.id} data={data} actions={menu(track)} /> : null;
+          return data ? <TrackCard key={track.id} data={data} {...cardProps(track)} /> : null;
         })}
         {tracks.length === 0 ? (
           <p className="py-3 text-sm text-muted">Aucune track dans cette colonne.</p>
