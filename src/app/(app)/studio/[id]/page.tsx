@@ -31,7 +31,15 @@ import {
   Modal,
   cn,
 } from "@/components/ui";
-import { IconChevronLeft, IconEdit, IconMore } from "@/components/ui/icons";
+import {
+  IconChevronLeft,
+  IconEdit,
+  IconMore,
+  IconNote,
+  IconRelease,
+  IconStudio,
+  IconTag,
+} from "@/components/ui/icons";
 import { AudioPlayerProvider } from "@/components/audio/player";
 import { TrackArtwork } from "@/components/tracks/track-artwork";
 import { TrackForm } from "@/components/tracks/track-form";
@@ -158,13 +166,27 @@ export default function TrackDetailPage() {
           Mes tracks
         </Link>
 
-        <header className="mb-8">
-          <div className="flex flex-wrap items-start gap-5">
+        {/*
+          Bandeau d'ouverture : la pochette générative, agrandie et floutée,
+          sert de fond à sa propre fiche. La track s'annonce avant de se lire.
+        */}
+        <header className="card relative mb-6 overflow-hidden">
+          <div className="pointer-events-none absolute inset-0" aria-hidden>
             <TrackArtwork
               track={track}
               color={color}
-              className="h-24 w-24 rounded-2xl lg:h-28 lg:w-28"
-              iconSize={30}
+              className="h-full w-full scale-125 opacity-60 blur-2xl"
+              detailed
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/85 to-surface/45" />
+          </div>
+
+          <div className="relative flex flex-wrap items-start gap-5 p-5 lg:p-7">
+            <TrackArtwork
+              track={track}
+              color={color}
+              className="h-24 w-24 rounded-2xl shadow-lg shadow-black/40 ring-1 ring-white/10 lg:h-28 lg:w-28"
+              detailed
             />
 
             <div className="min-w-0 flex-1">
@@ -182,6 +204,7 @@ export default function TrackDetailPage() {
               {progress && progress.production.total > 0 ? (
                 <div className="mt-4 flex max-w-md items-center gap-3">
                   <Meter
+                    segments={22}
                     className="flex-1"
                     value={progress.production.percent}
                     color={progress.production.percent >= 100 ? "var(--color-ok)" : color}
@@ -228,7 +251,7 @@ export default function TrackDetailPage() {
           </div>
 
           {/* L'étape se choisit d'un clic, pas dans une liste déroulante. */}
-          <div className="mt-6 flex flex-wrap items-center gap-1.5">
+          <div className="relative flex flex-wrap items-center gap-1.5 border-t border-line/70 px-5 py-4 lg:px-7">
             {COLUMNS.map((c) => (
               <StepChip
                 key={c.id}
@@ -254,7 +277,7 @@ export default function TrackDetailPage() {
           </div>
 
           {track.is_blocked ? (
-            <p className="mt-4 rounded-xl border border-danger/25 bg-danger/[0.07] px-4 py-2.5 text-sm text-danger">
+            <p className="relative border-t border-danger/20 bg-danger/[0.07] px-5 py-3 text-sm text-danger lg:px-7">
               Bloquée{track.blocked_reason ? ` : ${track.blocked_reason}` : ""}
             </p>
           ) : null}
@@ -262,7 +285,7 @@ export default function TrackDetailPage() {
           {nextAction ? (
             <p
               className={cn(
-                "mt-4 flex items-center gap-2.5 text-base",
+                "relative flex flex-wrap items-center gap-x-2.5 gap-y-1 border-t border-line/70 px-5 py-3.5 text-base lg:px-7",
                 ACTION_TONE[nextAction.tone],
               )}
             >
@@ -275,6 +298,7 @@ export default function TrackDetailPage() {
         <div className="space-y-3.5">
           <CollapsibleBlock
             title="Production"
+            icon={<IconStudio size={16} />}
             summary={
               progress && progress.production.total > 0
                 ? `${progress.production.done}/${progress.production.total}`
@@ -288,6 +312,7 @@ export default function TrackDetailPage() {
 
           <CollapsibleBlock
             title="Envois aux labels"
+            icon={<IconTag size={16} />}
             summary={submissions.length > 0 ? `${submissions.length}` : undefined}
             open={open.includes("labels")}
             onToggle={() => toggleBlock("labels")}
@@ -297,6 +322,7 @@ export default function TrackDetailPage() {
 
           <CollapsibleBlock
             title="Promotion"
+            icon={<IconRelease size={16} />}
             open={open.includes("promotion")}
             onToggle={() => toggleBlock("promotion")}
           >
@@ -305,6 +331,7 @@ export default function TrackDetailPage() {
 
           <CollapsibleBlock
             title="Notes et fichiers"
+            icon={<IconNote size={16} />}
             open={open.includes("notes")}
             onToggle={() => toggleBlock("notes")}
           >

@@ -120,7 +120,7 @@ export default function PromotionPage() {
                     track={track}
                     color={color}
                     className="aspect-[16/10] w-full rounded-none"
-                    iconSize={40}
+                    detailed
                   />
                   <div
                     className="pointer-events-none absolute inset-0"
@@ -169,6 +169,7 @@ export default function PromotionPage() {
                   {promoTasks.length > 0 ? (
                     <div className="mt-4 flex items-center gap-3">
                       <Meter
+                        segments={18}
                         className="flex-1"
                         value={progress.percent}
                         color={progress.percent >= 100 ? "var(--color-ok)" : "var(--color-info)"}

@@ -14,6 +14,7 @@ import {
 import type { TrackProgress } from "@/lib/domain/progress";
 import { Badge, Checkbox, Meter, cn } from "@/components/ui";
 import { IconChevronLeft, IconChevronRight, IconTag, IconWarning } from "@/components/ui/icons";
+import { TrackArtwork } from "./track-artwork";
 import type {
   LabelSubmission,
   PromotionTask,
@@ -101,36 +102,58 @@ export function TrackCard({
         "card card-hover group relative overflow-hidden",
         dragging && "opacity-70 ring-1 ring-accent",
       )}
+      style={{ "--tint": color } as React.CSSProperties}
     >
       {/* Liseré d'alias : on sait de quel projet il s'agit sans lire. */}
       <span
-        className="absolute inset-y-0 left-0 w-[3px]"
+        className="absolute inset-y-0 left-0 z-10 w-[3px]"
+        style={{ backgroundColor: color }}
+        aria-hidden
+      />
+      {/* La couleur du projet éclaire l'angle de la carte plutôt que de la border. */}
+      <span
+        className="pointer-events-none absolute -left-10 -top-14 h-32 w-40 rounded-full opacity-[0.16] blur-2xl transition-opacity duration-200 group-hover:opacity-[0.3]"
         style={{ backgroundColor: color }}
         aria-hidden
       />
 
-      <div className="py-3 pl-4 pr-3">
+      <div className="relative py-3 pl-4 pr-3">
         <Link href={`/studio/${track.id}`} className="block">
-          <h3 className="line-clamp-2-safe pr-7 text-title leading-[1.15] text-ink">
-            {track.title}
-          </h3>
+          <div className="flex items-start gap-3">
+            <TrackArtwork
+              track={track}
+              color={color}
+              className="h-10 w-10 rounded-[10px] ring-1 ring-white/10"
+            />
+            <div className="min-w-0 flex-1">
+              <h3 className="line-clamp-2-safe pr-7 text-title leading-[1.15] text-ink">
+                {track.title}
+              </h3>
 
-          {labelTitle ? (
-            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-soft">
-              <span className="shrink-0" style={{ color }}>
-                <IconTag size={13} />
-              </span>
-              <span className="truncate">{labelTitle}</span>
-            </p>
-          ) : null}
+              {labelTitle ? (
+                <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-soft">
+                  <span className="shrink-0" style={{ color }}>
+                    <IconTag size={12} />
+                  </span>
+                  <span className="truncate">{labelTitle}</span>
+                </p>
+              ) : null}
 
-          {subStep || readout ? (
-            <p className="mt-1 flex flex-wrap items-baseline gap-x-1.5 text-sm text-muted">
-              {subStep ? <span>{SUB_STEP_LABEL[subStep]}</span> : null}
-              {subStep && readout ? <span aria-hidden>·</span> : null}
-              {readout ? <span className="readout">{readout}</span> : null}
-            </p>
-          ) : null}
+              {subStep || readout ? (
+                <p className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 text-sm text-muted">
+                  {subStep ? (
+                    <span className="whitespace-nowrap">{SUB_STEP_LABEL[subStep]}</span>
+                  ) : null}
+                  {readout ? (
+                    <span className="readout whitespace-nowrap">
+                      {subStep ? "· " : ""}
+                      {readout}
+                    </span>
+                  ) : null}
+                </p>
+              ) : null}
+            </div>
+          </div>
 
           {track.is_blocked ? (
             <p className="mt-2 flex items-start gap-1.5 text-sm leading-snug text-danger">
@@ -140,8 +163,9 @@ export function TrackCard({
           ) : null}
 
           {progress.production.total > 0 ? (
-            <div className="mt-3 flex items-center gap-2.5">
+            <div className="mt-3.5 flex items-center gap-2.5">
               <Meter
+                segments={14}
                 className="flex-1"
                 value={percent}
                 color={percent >= 100 ? "var(--color-ok)" : color}

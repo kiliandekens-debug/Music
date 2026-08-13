@@ -222,11 +222,12 @@ export function Board({ tracks }: { tracks: Track[] }) {
         onDragCancel={() => setDraggingId(null)}
       >
         <div className="hidden grid-cols-4 items-start gap-4 lg:grid">
-          {COLUMNS.map((column) => (
+          {COLUMNS.map((column, index) => (
             <BoardColumn
               key={column.id}
               id={column.id}
               name={column.name}
+              index={index}
               tracks={byColumn.get(column.id) ?? []}
               cardData={cardData}
               cardProps={cardProps}
@@ -260,12 +261,14 @@ interface CardProps {
 function BoardColumn({
   id,
   name,
+  index,
   tracks,
   cardData,
   cardProps,
 }: {
   id: ColumnId;
   name: string;
+  index: number;
   tracks: Track[];
   cardData: Map<string, TrackCardData>;
   cardProps: (track: Track) => CardProps;
@@ -274,7 +277,10 @@ function BoardColumn({
   const Icon = COLUMN_ICON[id];
 
   return (
-    <section className="flex min-w-0 flex-col">
+    <section
+      className="animate-rise flex min-w-0 flex-col"
+      style={{ animationDelay: `${index * 55}ms`, animationFillMode: "backwards" }}
+    >
       <header className="mb-2.5 flex items-center gap-2 px-1">
         <Icon size={15} className="shrink-0 text-muted" />
         <h2 className="eyebrow text-ink-soft">{name}</h2>

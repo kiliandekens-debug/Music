@@ -399,21 +399,52 @@ export function Meter({
   label,
   className,
   thin,
+  segments,
 }: {
   value: number;
   color?: string;
   label?: string;
   className?: string;
   thin?: boolean;
+  /** Découpe la jauge en diodes, façon bargraphe d'appareil. */
+  segments?: number;
 }) {
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
+  const tint = color ?? "var(--accent)";
+
+  const shared = {
+    role: "progressbar" as const,
+    "aria-valuenow": clamped,
+    "aria-valuemin": 0,
+    "aria-valuemax": 100,
+    "aria-label": label ?? "Progression",
+  };
+
+  if (segments) {
+    const lit = Math.round((clamped / 100) * segments);
+    return (
+      <div {...shared} className={cn("flex gap-[3px]", className)}>
+        {Array.from({ length: segments }, (_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "flex-1 rounded-[1px] transition-[background-color,box-shadow] duration-300",
+              thin ? "h-1.5" : "h-2",
+            )}
+            style={
+              i < lit
+                ? { backgroundColor: tint, boxShadow: `0 0 6px -1px ${tint}` }
+                : { backgroundColor: "var(--color-surface-3)" }
+            }
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div
-      role="progressbar"
-      aria-valuenow={clamped}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={label ?? "Progression"}
+      {...shared}
       className={cn(
         "overflow-hidden rounded-full bg-surface-3",
         thin ? "h-1" : "h-1.5",
@@ -422,7 +453,7 @@ export function Meter({
     >
       <div
         className="h-full rounded-full transition-[width] duration-300"
-        style={{ width: `${clamped}%`, backgroundColor: color ?? "var(--accent)" }}
+        style={{ width: `${clamped}%`, backgroundColor: tint }}
       />
     </div>
   );
@@ -491,6 +522,7 @@ export function EmptyState({
  */
 export function CollapsibleBlock({
   title,
+  icon,
   summary,
   open,
   onToggle,
@@ -499,6 +531,7 @@ export function CollapsibleBlock({
   className,
 }: {
   title: string;
+  icon?: ReactNode;
   summary?: ReactNode;
   open: boolean;
   onToggle: () => void;
@@ -524,6 +557,7 @@ export function CollapsibleBlock({
               !open && "-rotate-90",
             )}
           />
+          {icon ? <span className="shrink-0 text-muted">{icon}</span> : null}
           <span className="text-base font-semibold text-ink">{title}</span>
           {/* Le résumé dit ce qu'il y a dedans quand c'est fermé ; une fois
               ouvert, le contenu le dit mieux que lui. */}
