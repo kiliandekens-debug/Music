@@ -57,25 +57,31 @@ function ShellFrame({ children }: { children: React.ReactNode }) {
   );
 }
 
-// --- Barre latérale (ordinateur) --------------------------------------------
+// --- Rail de navigation (ordinateur) ----------------------------------------
 
 /**
- * Trois destinations, un logo, une icône de réglages. Rien d'autre : la barre
- * latérale sert à se déplacer, pas à filtrer ni à créer.
+ * Trois destinations, une marque, un accès aux réglages.
+ *
+ * Un panneau de 196 px pour trois liens laissait les trois quarts de sa hauteur
+ * vides et prenait au tableau une largeur dont il a besoin. Le rail garde la
+ * navigation visible en permanence, avec l'icône et son mot, sur 76 px — et il
+ * parle le même langage que la barre du bas sur téléphone.
  */
 function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-[196px] shrink-0 flex-col border-r border-line bg-surface/30 lg:flex">
-      <Link href="/studio" className="flex h-16 items-center gap-2.5 px-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent-soft text-accent">
-          <IconMusic size={17} />
-        </span>
-        <span className="text-base font-semibold tracking-tight">{APP_NAME}</span>
+    <aside className="sticky top-0 hidden h-dvh w-[76px] shrink-0 flex-col items-center border-r border-line bg-surface/40 py-4 lg:flex">
+      <Link
+        href="/studio"
+        aria-label={APP_NAME}
+        title={APP_NAME}
+        className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent-soft text-accent transition-colors duration-100 hover:brightness-125"
+      >
+        <IconMusic size={19} />
       </Link>
 
-      <nav className="flex flex-col gap-1 px-3 py-2">
+      <nav className="mt-6 flex flex-col items-center gap-1.5">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
@@ -85,34 +91,40 @@ function Sidebar() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-base font-medium transition-colors duration-100",
+                "group relative flex w-[60px] flex-col items-center gap-1 rounded-2xl px-1 py-2.5 text-label font-medium transition-colors duration-100",
                 active
                   ? "bg-surface-3 text-ink"
                   : "text-muted hover:bg-surface-2 hover:text-ink-soft",
               )}
             >
-              <Icon size={18} className={active ? "text-accent" : undefined} />
-              {item.label}
+              {/* Repère d'activité : lisible même en vision périphérique. */}
+              <span
+                className={cn(
+                  "absolute -left-2 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-accent transition-opacity duration-100",
+                  active ? "opacity-100" : "opacity-0",
+                )}
+                aria-hidden
+              />
+              <Icon size={20} className={active ? "text-accent" : undefined} />
+              <span className="truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto p-3">
-        <Link
-          href="/parametres"
-          aria-label="Paramètres"
-          title="Paramètres"
-          className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-xl transition-colors duration-100",
-            pathname.startsWith("/parametres")
-              ? "bg-surface-3 text-ink"
-              : "text-muted hover:bg-surface-2 hover:text-ink-soft",
-          )}
-        >
-          <IconSettings size={17} />
-        </Link>
-      </div>
+      <Link
+        href="/parametres"
+        aria-label="Paramètres"
+        title="Paramètres"
+        className={cn(
+          "mt-auto flex h-10 w-10 items-center justify-center rounded-2xl transition-colors duration-100",
+          pathname.startsWith("/parametres")
+            ? "bg-surface-3 text-ink"
+            : "text-muted hover:bg-surface-2 hover:text-ink-soft",
+        )}
+      >
+        <IconSettings size={18} />
+      </Link>
     </aside>
   );
 }
@@ -173,11 +185,11 @@ function MobileNav() {
 function ShellSkeleton() {
   return (
     <div className="flex min-h-dvh">
-      <div className="hidden w-[196px] shrink-0 border-r border-line p-4 lg:block">
-        <Skeleton className="h-8 w-28" />
-        <div className="mt-6 space-y-2">
+      <div className="hidden w-[76px] shrink-0 flex-col items-center border-r border-line py-4 lg:flex">
+        <Skeleton className="h-10 w-10 rounded-2xl" />
+        <div className="mt-6 space-y-1.5">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-10 w-full" />
+            <Skeleton key={i} className="h-14 w-[60px] rounded-2xl" />
           ))}
         </div>
       </div>
